@@ -1,17 +1,17 @@
 // Tipos y DTOs compartidos entre frontend y backend
 
 export enum BusinessSize {
-  SMALL = "1-5",
-  MEDIUM = "5-10",
-  LARGE = "10+",
+  SMALL = "1-5 sucursales",
+  MEDIUM = "5-10 sucursales",
+  LARGE = "+10 sucursales",
 }
 
 export enum BusinessType {
-  CAFETERIA = "cafeteria",
-  RESTAURANT = "restaurante",
-  PELUQUERIA = "peluqueria",
-  MANICURA = "manicura",
-  OTRO = "otro",
+  CAFETERIA = "Cafeteria",
+  RESTAURANT = "Restaurant",
+  PELUQUERIA = "Peluqueria",
+  MANICURA = "Manicura",
+  OTRO = "Otro",
 }
 
 export interface Business {
@@ -55,6 +55,7 @@ export interface Client {
 
 export interface CreateBusinessDto extends Omit<Business, "id" | "logoPath"> {
   password: string;
+  logo?: File | undefined;
 }
 
 export type UpdateBusinessDto = Partial<Omit<CreateBusinessDto, "password">>;
@@ -136,7 +137,7 @@ export interface BusinessRegistrationForm {
     postalCode: string;
     province: string;
   };
-  logo?: File;
+  logo?: string;
   type: BusinessType;
   customType?: string;
   socialMedia: {
@@ -144,6 +145,12 @@ export interface BusinessRegistrationForm {
     tiktok?: string;
     website?: string;
   };
+  logoFile?: File;
+}
+
+export interface CreateBusiness {
+  createBusinessDto: CreateBusinessDto;
+  logo?: File | undefined;
 }
 
 export interface CreateRewardForm {
@@ -198,5 +205,3 @@ export interface BusinessStatistics {
     canjes: number;
   }[];
 }
-
-// ======= INTERFACES PARA CONTEXTO/ESTADO =======
