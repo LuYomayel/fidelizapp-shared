@@ -14,34 +14,23 @@ export enum BusinessType {
   OTRO = "Otro",
 }
 
-export interface Business {
+export interface IBusiness {
   id?: number | string;
   businessName: string;
   email: string;
   internalPhone: string;
   externalPhone: string;
   size: BusinessSize;
-  address?: {
-    street: string;
-    neighborhood: string;
-    postalCode: string;
-    province: string;
-  };
+  street: string;
+  neighborhood: string;
+  postalCode: string;
+  province: string;
   logoPath?: string;
   type: BusinessType;
   customType?: string;
-  socialMedia?: {
-    instagram?: string;
-    tiktok?: string;
-    website?: string;
-  };
-  colors?: {
-    primary: string;
-    secondary: string;
-  };
-  configuration?: {
-    pointsNewClient: number;
-  };
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
   createdAt?: Date;
   active?: boolean;
 }
@@ -53,7 +42,7 @@ export interface Client {
   lastName: string;
 }
 
-export interface CreateBusinessDto extends Omit<Business, "id" | "logoPath"> {
+export interface CreateBusinessDto extends Omit<IBusiness, "id" | "logoPath"> {
   password: string;
   logo?: File | undefined;
 }
