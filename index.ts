@@ -2,17 +2,17 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = "1-5 sucursales",
-  MEDIUM = "5-10 sucursales",
-  LARGE = "+10 sucursales",
+  SMALL = '1-5 sucursales',
+  MEDIUM = '5-10 sucursales',
+  LARGE = '+10 sucursales',
 }
 
 export enum BusinessType {
-  CAFETERIA = "Cafeteria",
-  RESTAURANT = "Restaurant",
-  PELUQUERIA = "Peluqueria",
-  MANICURA = "Manicura",
-  OTRO = "Otro",
+  CAFETERIA = 'Cafeteria',
+  RESTAURANT = 'Restaurant',
+  PELUQUERIA = 'Peluqueria',
+  MANICURA = 'Manicura',
+  OTRO = 'Otro',
 }
 
 // ======= INTERFACES =======
@@ -44,14 +44,14 @@ export interface Client {
 }
 
 // ======= DTOs =======
-export interface CreateBusinessDto extends Omit<IBusiness, "id" | "logoPath"> {
+export interface CreateBusinessDto extends Omit<IBusiness, 'id' | 'logoPath'> {
   password: string;
   logo?: File | undefined;
 }
 
-export type UpdateBusinessDto = Partial<Omit<CreateBusinessDto, "password">>;
+export type UpdateBusinessDto = Partial<Omit<CreateBusinessDto, 'password'>>;
 
-export interface CreateClientDto extends Omit<Client, "id"> {
+export interface CreateClientDto extends Omit<Client, 'id'> {
   password: string;
 }
 
@@ -109,15 +109,15 @@ export interface Admin {
 // ======= ENUMS Y TIPOS =======
 
 export enum TransactionType {
-  ACUMULATION = "acumulacion",
-  EXCHANGE = "canje",
-  REWARD = "bonificacion",
-  PENALTY = "penalizacion",
+  ACUMULATION = 'acumulacion',
+  EXCHANGE = 'canje',
+  REWARD = 'bonificacion',
+  PENALTY = 'penalizacion',
 }
 
 export enum AdminRole {
-  OWNER = "propietario",
-  EMPLOYEE = "empleado",
+  OWNER = 'propietario',
+  EMPLOYEE = 'empleado',
 }
 
 // ======= INTERFACES PARA FORMULARIOS =======
@@ -175,6 +175,6 @@ export interface BusinessStatistics {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<CreateClientDto, "password"> {
+  extends Omit<CreateClientDto, 'password'> {
   password?: string;
 }
