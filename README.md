@@ -1,0 +1,1 @@
+# fidelizapp-shared
