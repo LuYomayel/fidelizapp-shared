@@ -51,18 +51,22 @@ export interface CreateBusinessDto extends Omit<IBusiness, "id" | "logoPath"> {
 
 export type UpdateBusinessDto = Partial<Omit<CreateBusinessDto, "password">>;
 
-export interface CreateClientDto extends Omit<Client, "id"> {}
+export interface CreateClientDto extends Omit<Client, "id"> {
+  password: string;
+}
 
 export type UpdateClientDto = Partial<CreateClientDto>;
 
 export interface LoginBusinessDto {
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export interface LoginClientDto {
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 export interface Reward {
@@ -70,6 +74,7 @@ export interface Reward {
   name: string;
   description: string;
   requiredPoints: number;
+  points: number;
   image?: string;
   active: boolean;
   createdAt: Date;
@@ -167,4 +172,9 @@ export interface BusinessStatistics {
     premio: string;
     canjes: number;
   }[];
+}
+
+export interface ClientRegistrationForm
+  extends Omit<CreateClientDto, "password"> {
+  password?: string;
 }
