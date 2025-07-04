@@ -1,15 +1,5 @@
-// Tipos y DTOs compartidos entre frontend y backend
-
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Length,
-} from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PartialType } from '@nestjs/mapped-types';
+// Tipos y interfaces compartidos entre frontend y backend
+// Solo TypeScript puro - sin dependencias de NestJS
 
 // ======= ENUMS =======
 export enum BusinessSize {
@@ -48,25 +38,28 @@ export interface IBusiness {
   id?: number | string;
   businessName: string;
   email: string;
+  password?: string;
   internalPhone?: string;
   externalPhone?: string;
   size: BusinessSize;
-  street: string;
-  neighborhood: string;
-  postalCode: string;
-  province: string;
+  street?: string;
+  neighborhood?: string;
+  postalCode?: string;
+  province?: string;
   logoPath?: string;
   type: BusinessType;
   instagram?: string;
   tiktok?: string;
   website?: string;
   createdAt?: Date;
+  updatedAt?: Date;
   active?: boolean;
 }
 
 export interface IClient {
   id?: number | string;
   email: string;
+  password?: string;
   firstName: string;
   lastName: string;
   googleId?: string;
@@ -114,282 +107,68 @@ export interface Transaction {
   adminId: string;
 }
 
-// ======= DTOs CON DECORADORES =======
-
-// Business DTOs
-export class CreateBusinessDto {
-  @ApiProperty({
-    description: 'Nombre del negocio',
-    example: 'Panadería La Delicia',
-    maxLength: 255,
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(1, 255)
+// ======= INTERFACES PARA DTOs =======
+export interface ICreateBusinessDto {
   businessName: string;
-
-  @ApiProperty({
-    description: 'Email del negocio',
-    example: 'contacto@ladelicia.com',
-    format: 'email',
-  })
-  @IsEmail()
   email: string;
-
-  @ApiProperty({
-    description: 'Contraseña del negocio',
-    example: 'superSecreta123',
-    minLength: 6,
-    maxLength: 100,
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(6, 100)
   password: string;
-
-  @ApiPropertyOptional({
-    description: 'Teléfono interno del negocio',
-    example: '+54 11 1234-5678',
-    maxLength: 20,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 20)
   internalPhone?: string;
-
-  @ApiPropertyOptional({
-    description: 'Teléfono externo del negocio',
-    example: '+54 11 8765-4321',
-    maxLength: 20,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 20)
   externalPhone?: string;
-
-  @ApiProperty({
-    description: 'Tamaño del negocio',
-    enum: BusinessSize,
-    example: BusinessSize.SMALL,
-  })
-  @IsEnum(BusinessSize)
   size: BusinessSize;
-
-  @ApiProperty({
-    description: 'Dirección del negocio',
-    example: 'Av. Siempre Viva 123',
-    maxLength: 255,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 255)
   street?: string;
-
-  @ApiProperty({
-    description: 'Barrio del negocio',
-    example: 'Centro',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
   neighborhood?: string;
-
-  @ApiProperty({
-    description: 'Código postal',
-    example: '1000',
-    maxLength: 10,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 10)
   postalCode?: string;
-
-  @ApiProperty({
-    description: 'Provincia',
-    example: 'CABA',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
   province?: string;
-
-  @ApiProperty({
-    description: 'Tipo de negocio',
-    enum: BusinessType,
-    example: BusinessType.CAFETERIA,
-  })
-  @IsEnum(BusinessType)
   type: BusinessType;
-
-  @ApiPropertyOptional({
-    description: 'Instagram del negocio',
-    example: '@negocio',
-    maxLength: 255,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 255)
   instagram?: string;
-
-  @ApiPropertyOptional({
-    description: 'TikTok del negocio',
-    example: '@negocio',
-    maxLength: 255,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 255)
   tiktok?: string;
-
-  @ApiPropertyOptional({
-    description: 'Website del negocio',
-    example: 'https://www.negocio.com',
-    maxLength: 255,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 255)
   website?: string;
-
-  @IsOptional()
-  logo?: Express.Multer.File;
+  logo?: File | Express.Multer.File;
 }
 
-export class UpdateBusinessDto extends PartialType(CreateBusinessDto) {
-  @ApiPropertyOptional({
-    description: 'Nueva contraseña del negocio',
-    minLength: 6,
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(6, 100)
+export interface IUpdateBusinessDto {
+  businessName?: string;
+  email?: string;
   password?: string;
+  internalPhone?: string;
+  externalPhone?: string;
+  size?: BusinessSize;
+  street?: string;
+  neighborhood?: string;
+  postalCode?: string;
+  province?: string;
+  type?: BusinessType;
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
+  logo?: File | Express.Multer.File;
 }
 
-export class LoginBusinessDto {
-  @ApiProperty({
-    description: 'Email del negocio',
-    example: 'contacto@ladelicia.com',
-    format: 'email',
-  })
-  @IsEmail()
+export interface ILoginBusinessDto {
   email: string;
-
-  @ApiProperty({
-    description: 'Contraseña del negocio',
-    example: 'superSecreta123',
-  })
-  @IsNotEmpty()
-  @IsString()
   password: string;
 }
 
-// Client DTOs
-export class CreateClientDto {
-  @ApiProperty({
-    description: 'Email del cliente',
-    example: 'cliente@email.com',
-    format: 'email',
-  })
-  @IsEmail()
+export interface ICreateClientDto {
   email: string;
-
-  @ApiProperty({
-    description: 'Contraseña del cliente',
-    example: 'miPassword123',
-    minLength: 6,
-    maxLength: 100,
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(6, 100)
   password: string;
-
-  @ApiProperty({
-    description: 'Nombre del cliente',
-    example: 'Juan',
-    maxLength: 100,
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(1, 100)
   firstName: string;
-
-  @ApiProperty({
-    description: 'Apellido del cliente',
-    example: 'Pérez',
-    maxLength: 100,
-  })
-  @IsNotEmpty()
-  @IsString()
-  @Length(1, 100)
   lastName: string;
 }
 
-export class UpdateClientDto {
-  @ApiPropertyOptional({
-    description: 'Email del cliente',
-    example: 'cliente@email.com',
-    format: 'email',
-  })
-  @IsOptional()
-  @IsEmail()
+export interface IUpdateClientDto {
   email?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nueva contraseña del cliente',
-    minLength: 6,
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(6, 100)
   password?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nombre del cliente',
-    example: 'Juan',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
   firstName?: string;
-
-  @ApiPropertyOptional({
-    description: 'Apellido del cliente',
-    example: 'Pérez',
-    maxLength: 100,
-  })
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
   lastName?: string;
 }
 
-export class LoginClientDto {
-  @ApiProperty({
-    description: 'Email del cliente',
-    example: 'cliente@email.com',
-    format: 'email',
-  })
-  @IsEmail()
+export interface ILoginClientDto {
   email: string;
-
-  @ApiProperty({
-    description: 'Contraseña del cliente',
-    example: 'miPassword123',
-  })
-  @IsNotEmpty()
-  @IsString()
   password: string;
 }
 
 // ======= INTERFACES PARA RESPUESTAS API =======
-
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -458,7 +237,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<CreateClientDto, 'password'> {
+  extends Omit<ICreateClientDto, 'password'> {
   password?: string;
 }
 
@@ -503,7 +282,9 @@ export interface ClientFilters extends PaginationParams {
 
 // ======= LEGACY INTERFACES PARA COMPATIBILIDAD =======
 export type Client = IClient; // Mantener compatibilidad
-export type UpdateClientDtoLegacy = Partial<CreateClientDto>; // Mantener compatibilidad
-export type UpdateBusinessDtoLegacy = Partial<
-  Omit<CreateBusinessDto, 'password'>
->; // Mantener compatibilidad
+export type CreateClientDto = ICreateClientDto; // Mantener compatibilidad
+export type UpdateClientDto = IUpdateClientDto; // Mantener compatibilidad
+export type LoginClientDto = ILoginClientDto; // Mantener compatibilidad
+export type CreateBusinessDto = ICreateBusinessDto; // Mantener compatibilidad
+export type UpdateBusinessDto = IUpdateBusinessDto; // Mantener compatibilidad
+export type LoginBusinessDto = ILoginBusinessDto; // Mantener compatibilidad
