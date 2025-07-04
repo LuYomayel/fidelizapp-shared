@@ -123,7 +123,7 @@ export interface ICreateBusinessDto {
   instagram?: string;
   tiktok?: string;
   website?: string;
-  logo?: File | Express.Multer.File;
+  logo?: File;
 }
 
 export interface IUpdateBusinessDto {
@@ -141,7 +141,7 @@ export interface IUpdateBusinessDto {
   instagram?: string;
   tiktok?: string;
   website?: string;
-  logo?: File | Express.Multer.File;
+  logo?: File;
 }
 
 export interface ILoginBusinessDto {
