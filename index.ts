@@ -33,6 +33,29 @@ export enum UserProvider {
   GOOGLE = 'google',
 }
 
+// ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
+export enum StampType {
+  PURCHASE = 'compra',
+  VISIT = 'visita',
+  REFERRAL = 'referencia',
+  BONUS = 'bonus',
+  SPECIAL = 'especial',
+}
+
+export enum StampStatus {
+  ACTIVE = 'activo',
+  USED = 'usado',
+  EXPIRED = 'expirado',
+  CANCELLED = 'cancelado',
+}
+
+export enum PurchaseType {
+  SMALL = 'pequeña',
+  MEDIUM = 'mediana',
+  LARGE = 'grande',
+  SPECIAL = 'especial',
+}
+
 // ======= INTERFACES BÁSICAS =======
 export interface IBusiness {
   id?: number | string;
@@ -51,6 +74,8 @@ export interface IBusiness {
   instagram?: string;
   tiktok?: string;
   website?: string;
+  stampsForReward?: number; // Cantidad de sellos para recompensa
+  rewardDescription?: string; // Descripción de la recompensa
   createdAt?: Date;
   updatedAt?: Date;
   active?: boolean;
@@ -68,6 +93,50 @@ export interface IClient {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+// ======= NUEVAS INTERFACES PARA SISTEMA DE SELLOS =======
+export interface IStamp {
+  id?: number | string;
+  businessId: number | string;
+  code: string;
+  qrCode?: string;
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number; // Cantidad de sellos que otorga
+  description: string;
+  status: StampStatus;
+  expiresAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  usedAt?: Date;
+  usedBy?: number | string; // ID del cliente que lo usó
+}
+
+export interface IClientCard {
+  id?: number | string;
+  clientId: number | string;
+  businessId: number | string;
+  totalStamps: number;
+  availableStamps: number;
+  usedStamps: number;
+  level: number;
+  lastStampDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  client?: IClient;
+  business?: IBusiness;
+}
+
+export interface IStampRedemption {
+  id?: number | string;
+  stampId: number | string;
+  clientId: number | string;
+  clientCardId: number | string;
+  redeemedAt: Date;
+  stamp?: IStamp;
+  client?: IClient;
+  clientCard?: IClientCard;
 }
 
 export interface Admin {
@@ -166,6 +235,35 @@ export interface IUpdateClientDto {
 export interface ILoginClientDto {
   email: string;
   password: string;
+}
+
+// ======= NUEVOS DTOs PARA SISTEMA DE SELLOS =======
+export interface ICreateStampDto {
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number;
+  description: string;
+  expiresAt?: Date;
+}
+
+export interface IRedeemStampDto {
+  code: string;
+}
+
+export interface IStampSummaryDto {
+  totalGenerated: number;
+  totalUsed: number;
+  totalExpired: number;
+  totalActive: number;
+  recentStamps: IStamp[];
+}
+
+export interface IClientCardSummaryDto {
+  totalCards: number;
+  activeCards: number;
+  totalStampsIssued: number;
+  totalStampsRedeemed: number;
+  recentRedemptions: IStampRedemption[];
 }
 
 // ======= INTERFACES PARA RESPUESTAS API =======
@@ -280,6 +378,34 @@ export interface ClientFilters extends PaginationParams {
   isActive?: boolean;
 }
 
+// ======= NUEVAS INTERFACES PARA FORMULARIOS =======
+export interface CreateStampForm {
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number;
+  description: string;
+  expiresAt?: Date;
+}
+
+export interface RedeemStampForm {
+  code: string;
+}
+
+export interface StampFilters extends PaginationParams {
+  status?: StampStatus;
+  stampType?: StampType;
+  purchaseType?: PurchaseType;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
+export interface ClientCardFilters extends PaginationParams {
+  businessId?: number | string;
+  minStamps?: number;
+  maxStamps?: number;
+  level?: number;
+}
+
 // ======= LEGACY INTERFACES PARA COMPATIBILIDAD =======
 export type Client = IClient; // Mantener compatibilidad
 export type CreateClientDto = ICreateClientDto; // Mantener compatibilidad
@@ -288,3 +414,12 @@ export type LoginClientDto = ILoginClientDto; // Mantener compatibilidad
 export type CreateBusinessDto = ICreateBusinessDto; // Mantener compatibilidad
 export type UpdateBusinessDto = IUpdateBusinessDto; // Mantener compatibilidad
 export type LoginBusinessDto = ILoginBusinessDto; // Mantener compatibilidad
+
+// Nuevos tipos para el sistema de sellos
+export type Stamp = IStamp;
+export type ClientCard = IClientCard;
+export type StampRedemption = IStampRedemption;
+export type CreateStampDto = ICreateStampDto;
+export type RedeemStampDto = IRedeemStampDto;
+export type StampSummaryDto = IStampSummaryDto;
+export type ClientCardSummaryDto = IClientCardSummaryDto;
