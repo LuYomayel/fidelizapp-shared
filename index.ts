@@ -3,57 +3,57 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = '1-5 sucursales',
-  MEDIUM = '5-10 sucursales',
-  LARGE = '+10 sucursales',
+  SMALL = "1-5 sucursales",
+  MEDIUM = "5-10 sucursales",
+  LARGE = "+10 sucursales",
 }
 
 export enum BusinessType {
-  CAFETERIA = 'Cafeteria',
-  RESTAURANT = 'Restaurant',
-  PELUQUERIA = 'Peluqueria',
-  MANICURA = 'Manicura',
-  OTRO = 'Otro',
+  CAFETERIA = "Cafeteria",
+  RESTAURANT = "Restaurant",
+  PELUQUERIA = "Peluqueria",
+  MANICURA = "Manicura",
+  OTRO = "Otro",
 }
 
 export enum TransactionType {
-  ACUMULATION = 'acumulacion',
-  EXCHANGE = 'canje',
-  REWARD = 'bonificacion',
-  PENALTY = 'penalizacion',
+  ACUMULATION = "acumulacion",
+  EXCHANGE = "canje",
+  REWARD = "bonificacion",
+  PENALTY = "penalizacion",
 }
 
 export enum AdminRole {
-  OWNER = 'propietario',
-  EMPLOYEE = 'empleado',
+  OWNER = "propietario",
+  EMPLOYEE = "empleado",
 }
 
 export enum UserProvider {
-  EMAIL = 'email',
-  GOOGLE = 'google',
+  EMAIL = "email",
+  GOOGLE = "google",
 }
 
 // ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
 export enum StampType {
-  PURCHASE = 'compra',
-  VISIT = 'visita',
-  REFERRAL = 'referencia',
-  BONUS = 'bonus',
-  SPECIAL = 'especial',
+  PURCHASE = "compra",
+  VISIT = "visita",
+  REFERRAL = "referencia",
+  BONUS = "bonus",
+  SPECIAL = "especial",
 }
 
 export enum StampStatus {
-  ACTIVE = 'activo',
-  USED = 'usado',
-  EXPIRED = 'expirado',
-  CANCELLED = 'cancelado',
+  ACTIVE = "activo",
+  USED = "usado",
+  EXPIRED = "expirado",
+  CANCELLED = "cancelado",
 }
 
 export enum PurchaseType {
-  SMALL = 'pequeña',
-  MEDIUM = 'mediana',
-  LARGE = 'grande',
-  SPECIAL = 'especial',
+  SMALL = "pequeña",
+  MEDIUM = "mediana",
+  LARGE = "grande",
+  SPECIAL = "especial",
 }
 
 // ======= INTERFACES BÁSICAS =======
@@ -126,6 +126,21 @@ export interface IClientCard {
   updatedAt?: Date;
   client?: IClient;
   business?: IBusiness;
+}
+
+export interface IBusinessClient {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePicture: string;
+  totalStamps: number;
+  availableStamps: number;
+  usedStamps: number;
+  level: number;
+  lastStampDate: Date;
+  totalRedemptions: number;
+  createdAt: Date;
 }
 
 export interface IStampRedemption {
@@ -302,7 +317,7 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   businessName?: string;
-  type: 'business' | 'client';
+  type: "business" | "client";
   provider: UserProvider;
   profilePicture?: string;
   isActive: boolean;
@@ -335,7 +350,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<ICreateClientDto, 'password'> {
+  extends Omit<ICreateClientDto, "password"> {
   password?: string;
 }
 
@@ -362,7 +377,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
+  sortOrder?: "ASC" | "DESC";
 }
 
 // ======= INTERFACES PARA FILTROS =======
