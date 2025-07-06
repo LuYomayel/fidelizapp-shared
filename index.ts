@@ -3,65 +3,65 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = '1-5 sucursales',
-  MEDIUM = '5-10 sucursales',
-  LARGE = '+10 sucursales',
+  SMALL = "1-5 sucursales",
+  MEDIUM = "5-10 sucursales",
+  LARGE = "+10 sucursales",
 }
 
 export enum BusinessType {
-  CAFETERIA = 'Cafeteria',
-  RESTAURANT = 'Restaurant',
-  PELUQUERIA = 'Peluqueria',
-  MANICURA = 'Manicura',
-  OTRO = 'Otro',
+  CAFETERIA = "Cafeteria",
+  RESTAURANT = "Restaurant",
+  PELUQUERIA = "Peluqueria",
+  MANICURA = "Manicura",
+  OTRO = "Otro",
 }
 
 export enum TransactionType {
-  ACUMULATION = 'acumulacion',
-  EXCHANGE = 'canje',
-  REWARD = 'bonificacion',
-  PENALTY = 'penalizacion',
+  ACUMULATION = "acumulacion",
+  EXCHANGE = "canje",
+  REWARD = "bonificacion",
+  PENALTY = "penalizacion",
 }
 
 export enum AdminRole {
-  OWNER = 'propietario',
-  EMPLOYEE = 'empleado',
+  OWNER = "propietario",
+  EMPLOYEE = "empleado",
 }
 
 export enum UserProvider {
-  EMAIL = 'email',
-  GOOGLE = 'google',
+  EMAIL = "email",
+  GOOGLE = "google",
 }
 
 // ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
 export enum StampType {
-  PURCHASE = 'compra',
-  VISIT = 'visita',
-  REFERRAL = 'referencia',
-  BONUS = 'bonus',
-  SPECIAL = 'especial',
+  PURCHASE = "compra",
+  VISIT = "visita",
+  REFERRAL = "referencia",
+  BONUS = "bonus",
+  SPECIAL = "especial",
 }
 
 export enum StampStatus {
-  ACTIVE = 'activo',
-  USED = 'usado',
-  EXPIRED = 'expirado',
-  CANCELLED = 'cancelado',
+  ACTIVE = "activo",
+  USED = "usado",
+  EXPIRED = "expirado",
+  CANCELLED = "cancelado",
 }
 
 export enum PurchaseType {
-  SMALL = 'pequeña',
-  MEDIUM = 'mediana',
-  LARGE = 'grande',
-  SPECIAL = 'especial',
+  SMALL = "pequeña",
+  MEDIUM = "mediana",
+  LARGE = "grande",
+  SPECIAL = "especial",
 }
 
 // ======= ENUMS PARA SISTEMA DE RECOMPENSAS =======
 export enum RedemptionStatus {
-  PENDING = 'pending',
-  DELIVERED = 'delivered',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  DELIVERED = "delivered",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 // ======= INTERFACES BÁSICAS =======
@@ -244,6 +244,16 @@ export interface IRedemptionFilters {
   limit?: number;
 }
 
+export interface IRewardStatistics {
+  totalRewards: number;
+  totalRedemptions: number;
+  pendingRedemptions: number;
+  mostRedeemedReward?: {
+    name: string;
+    redemptions: number;
+  };
+}
+
 export interface IDashboard {
   totalStamps: number;
   activeClients: number;
@@ -419,7 +429,7 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   businessName?: string;
-  type: 'business' | 'client';
+  type: "business" | "client";
   provider: UserProvider;
   profilePicture?: string;
   isActive: boolean;
@@ -452,7 +462,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<ICreateClientDto, 'password'> {
+  extends Omit<ICreateClientDto, "password"> {
   password?: string;
 }
 
@@ -479,7 +489,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
+  sortOrder?: "ASC" | "DESC";
 }
 
 // ======= INTERFACES PARA FILTROS =======
