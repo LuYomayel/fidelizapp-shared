@@ -1,8 +1,6 @@
 // Tipos y interfaces compartidos entre frontend y backend
 // Solo TypeScript puro - sin dependencias de NestJS
 
-import { Column } from 'typeorm';
-
 // ======= ENUMS =======
 export enum BusinessSize {
   SMALL = '1-5 sucursales',
@@ -56,6 +54,14 @@ export enum PurchaseType {
   MEDIUM = 'mediana',
   LARGE = 'grande',
   SPECIAL = 'especial',
+}
+
+// ======= ENUMS PARA SISTEMA DE RECOMPENSAS =======
+export enum RedemptionStatus {
+  PENDING = 'pending',
+  DELIVERED = 'delivered',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
 }
 
 // ======= INTERFACES BÁSICAS =======
@@ -184,12 +190,58 @@ export interface IRewardRedemption {
   stampsSpent: number; // Cantidad de sellos gastados
   stampsBefore: number; // Sellos antes del canje
   stampsAfter: number; // Sellos después del canje
+  redemptionCode: string; // Código único para mostrar al negocio
+  status: RedemptionStatus; // Estado del reclamo
+  expiresAt?: Date; // Fecha de expiración del código
+  deliveredAt?: Date; // Cuándo se entregó la recompensa física
+  deliveredBy?: string; // Quién entregó la recompensa
   notes?: string; // Notas adicionales del canje
   redeemedAt: Date;
+  updatedAt: Date;
   // Relaciones
   reward: IReward;
   client: IClient;
   clientCard: IClientCard;
+}
+
+// ======= NUEVAS INTERFACES PARA RECLAMOS =======
+export interface IRedemptionTicket {
+  id: number;
+  redemptionCode: string;
+  clientName: string;
+  clientEmail: string;
+  rewardName: string;
+  rewardDescription: string;
+  stampsSpent: number;
+  redeemedAt: Date;
+  expiresAt?: Date;
+  status: RedemptionStatus;
+  businessName: string;
+  businessLogo?: string;
+}
+
+export interface IRedemptionDashboard {
+  totalPending: number;
+  totalDelivered: number;
+  totalExpired: number;
+  pendingRedemptions: IRewardRedemption[];
+  recentDeliveries: IRewardRedemption[];
+}
+
+export interface IDeliverRedemptionDto {
+  redemptionId: number;
+  deliveredBy: string;
+  notes?: string;
+}
+
+export interface IRedemptionFilters {
+  status?: RedemptionStatus;
+  dateFrom?: Date;
+  dateTo?: Date;
+  clientId?: number;
+  rewardId?: number;
+  page?: number;
+  limit?: number;
 }
 
 export interface IDashboard {
@@ -198,6 +250,10 @@ export interface IDashboard {
   rewardsExchanged: number;
   clientRetention: number;
   recentClients: IClientCard[];
+  // Nuevas métricas para recompensas
+  totalRedemptions: number;
+  pendingRedemptions: number;
+  recentRedemptions: IRewardRedemption[];
 }
 
 export interface Admin {
