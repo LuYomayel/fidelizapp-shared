@@ -1,6 +1,8 @@
 // Tipos y interfaces compartidos entre frontend y backend
 // Solo TypeScript puro - sin dependencias de NestJS
 
+import { Column } from 'typeorm';
+
 // ======= ENUMS =======
 export enum BusinessSize {
   SMALL = '1-5 sucursales',
@@ -126,6 +128,7 @@ export interface IClientCard {
   updatedAt?: Date;
   client?: IClient;
   business?: IBusiness;
+  redemptions?: IStampRedemption[];
 }
 
 export interface IBusinessClient {
@@ -142,15 +145,6 @@ export interface IBusinessClient {
   totalRedemptions: number;
   createdAt: Date;
 }
-
-export interface IDashboard {
-  totalStamps: number;
-  activeClients: number;
-  rewardsExchanged: number;
-  clientRetention: number;
-  recentClients: IClientCard[];
-}
-
 export interface IStampRedemption {
   id?: number | string;
   stampId: number | string;
@@ -160,6 +154,50 @@ export interface IStampRedemption {
   stamp?: IStamp;
   client?: IClient;
   clientCard?: IClientCard;
+}
+
+export interface IReward {
+  id: number;
+  businessId: number;
+  name: string;
+  description: string;
+  requiredStamps: number; // Cantidad de sellos necesarios para canjear
+  stampsCost: number; // Cantidad de sellos que cuesta la recompensa
+  image?: string;
+  active: boolean;
+  expirationDate?: Date;
+  stock?: number; // Stock disponible (-1 = ilimitado)
+  specialConditions?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  // Relaciones
+  business: IBusiness;
+  redemptions: IRewardRedemption[];
+}
+
+export interface IRewardRedemption {
+  id: number;
+  rewardId: number;
+  clientId: number;
+  clientCardId: number;
+  businessId: number;
+  stampsSpent: number; // Cantidad de sellos gastados
+  stampsBefore: number; // Sellos antes del canje
+  stampsAfter: number; // Sellos después del canje
+  notes?: string; // Notas adicionales del canje
+  redeemedAt: Date;
+  // Relaciones
+  reward: IReward;
+  client: IClient;
+  clientCard: IClientCard;
+}
+
+export interface IDashboard {
+  totalStamps: number;
+  activeClients: number;
+  rewardsExchanged: number;
+  clientRetention: number;
+  recentClients: IClientCard[];
 }
 
 export interface Admin {
