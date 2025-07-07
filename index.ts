@@ -119,6 +119,7 @@ export interface IStamp {
   updatedAt?: Date;
   usedAt?: Date;
   usedBy?: number | string; // ID del cliente que lo usó
+  business?: IBusiness; // Relación con el negocio
 }
 
 export interface IClientCard {
