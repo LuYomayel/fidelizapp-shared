@@ -265,6 +265,11 @@ export interface IDashboard {
   totalRedemptions: number;
   pendingRedemptions: number;
   recentRedemptions: IRewardRedemption[];
+  // Porcentajes de crecimiento vs mes anterior
+  stampsGrowth: number;
+  clientsGrowth: number;
+  rewardsGrowth: number;
+  retentionGrowth: number;
 }
 
 export interface Admin {
