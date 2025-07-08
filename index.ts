@@ -721,6 +721,122 @@ export interface IQuickStampGenerationDto {
   purchaseAmount?: number;
 }
 
+// ======= INTERFACES PARA PERFILES DE USUARIO =======
+export interface IBusinessProfile {
+  id: number;
+  businessName: string;
+  email: string;
+  internalPhone?: string;
+  externalPhone?: string;
+  size: BusinessSize;
+  street?: string;
+  neighborhood?: string;
+  postalCode?: string;
+  province?: string;
+  logoPath?: string;
+  type: BusinessType;
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
+  stampsForReward: number;
+  rewardDescription?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IClientProfile {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  profilePicture?: string;
+  provider: UserProvider;
+  emailVerified: boolean;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  // Estadísticas del cliente
+  totalStamps?: number;
+  totalRedemptions?: number;
+  favoriteBusinesses?: string[];
+  memberSince?: Date;
+}
+
+// ======= DTOs PARA ACTUALIZACIÓN DE PERFILES =======
+export interface IUpdateBusinessProfileDto {
+  businessName?: string;
+  email?: string;
+  internalPhone?: string;
+  externalPhone?: string;
+  size?: BusinessSize;
+  street?: string;
+  neighborhood?: string;
+  postalCode?: string;
+  province?: string;
+  type?: BusinessType;
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
+  stampsForReward?: number;
+  rewardDescription?: string;
+}
+
+export interface IUpdateClientProfileDto {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string; // Para cambio de contraseña
+  currentPassword?: string; // Para validar cambio de contraseña
+}
+
+export interface IChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// ======= INTERFACES PARA QR Y CONFIGURACIONES =======
+export interface IBusinessQRData {
+  businessId: number;
+  businessName: string;
+  qrCode: string; // Base64 del QR generado
+  qrUrl: string; // URL para escanear y acceder al negocio
+}
+
+export interface IClientSettings {
+  notifications: {
+    email: boolean;
+    push: boolean;
+    rewards: boolean;
+    stamps: boolean;
+  };
+  privacy: {
+    profileVisible: boolean;
+    shareActivity: boolean;
+  };
+  preferences: {
+    language: string;
+    theme: 'light' | 'dark' | 'auto';
+  };
+}
+
+export interface IBusinessSettings {
+  notifications: {
+    newClients: boolean;
+    rewards: boolean;
+    lowStock: boolean;
+  };
+  business: {
+    autoExpireStamps: boolean;
+    stampExpirationDays: number;
+    requireEmailVerification: boolean;
+  };
+  marketing: {
+    allowPromotions: boolean;
+    shareStatistics: boolean;
+  };
+}
+
 // ======= LEGACY INTERFACES PARA COMPATIBILIDAD =======
 export type Client = IClient; // Mantener compatibilidad
 export type CreateClientDto = ICreateClientDto; // Mantener compatibilidad
