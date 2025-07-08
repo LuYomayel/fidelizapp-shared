@@ -618,6 +618,109 @@ export interface ClientCardFilters extends PaginationParams {
   level?: number;
 }
 
+// ======= NUEVAS INTERFACES PARA CONFIGURACIÓN MODULAR =======
+export interface IStampConfig {
+  id?: number | string;
+  businessId: number | string;
+  name: string; // Nombre del tipo de código
+  description?: string; // Descripción del tipo
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number; // Cantidad de sellos que otorga
+  minPurchaseAmount?: number; // Monto mínimo de compra
+  maxPurchaseAmount?: number; // Monto máximo de compra
+  isActive: boolean;
+  isQuickAction: boolean; // Si aparece en acciones rápidas
+  buttonColor?: string; // Color del botón
+  buttonText?: string; // Texto del botón
+  iconName?: string; // Nombre del icono
+  sortOrder: number; // Orden de aparición
+  createdAt?: Date;
+  updatedAt?: Date;
+  business?: IBusiness;
+}
+
+export interface IStampRule {
+  id?: number | string;
+  businessId: number | string;
+  name: string; // Nombre de la regla
+  description?: string; // Descripción de la regla
+  minAmount: number; // Monto mínimo
+  maxAmount?: number; // Monto máximo (null = sin límite)
+  stampsAwarded: number; // Sellos otorgados
+  isActive: boolean;
+  sortOrder: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  business?: IBusiness;
+}
+
+// ======= DTOs PARA CONFIGURACIÓN =======
+export interface ICreateStampConfigDto {
+  name: string;
+  description?: string;
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number;
+  minPurchaseAmount?: number;
+  maxPurchaseAmount?: number;
+  isActive?: boolean;
+  isQuickAction?: boolean;
+  buttonColor?: string;
+  buttonText?: string;
+  iconName?: string;
+  sortOrder?: number;
+}
+
+export interface IUpdateStampConfigDto {
+  name?: string;
+  description?: string;
+  stampType?: StampType;
+  purchaseType?: PurchaseType;
+  stampValue?: number;
+  minPurchaseAmount?: number;
+  maxPurchaseAmount?: number;
+  isActive?: boolean;
+  isQuickAction?: boolean;
+  buttonColor?: string;
+  buttonText?: string;
+  iconName?: string;
+  sortOrder?: number;
+}
+
+export interface ICreateStampRuleDto {
+  name: string;
+  description?: string;
+  minAmount: number;
+  maxAmount?: number;
+  stampsAwarded: number;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+export interface IUpdateStampRuleDto {
+  name?: string;
+  description?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  stampsAwarded?: number;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+// ======= INTERFACES PARA GENERAR CÓDIGOS CON CONFIGURACIÓN =======
+export interface IGenerateStampFromConfigDto {
+  configId: number;
+  description: string;
+  purchaseAmount?: number; // Para validar reglas de monto
+  expiresAt?: Date;
+}
+
+export interface IQuickStampGenerationDto {
+  configId: number;
+  purchaseAmount?: number;
+}
+
 // ======= LEGACY INTERFACES PARA COMPATIBILIDAD =======
 export type Client = IClient; // Mantener compatibilidad
 export type CreateClientDto = ICreateClientDto; // Mantener compatibilidad
