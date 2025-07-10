@@ -760,6 +760,55 @@ export interface IClientProfile {
   totalRedemptions?: number;
   favoriteBusinesses?: string[];
   memberSince?: Date;
+  // Información detallada del perfil
+  statistics?: {
+    totalStamps: number;
+    totalRedemptions: number;
+    activeDays: number;
+    totalBusinesses: number;
+    stampsByBusiness: Array<{
+      businessName: string;
+      businessId: number;
+      totalStamps: number;
+      availableStamps: number;
+      usedStamps: number;
+      level: number;
+      lastStampDate?: Date;
+    }>;
+    rewardsByBusiness: Array<{
+      businessName: string;
+      businessId: number;
+      totalRewards: number;
+      lastRewardDate?: Date;
+    }>;
+  };
+  // Tarjetas de cliente por negocio
+  clientCards?: Array<{
+    id: number;
+    businessId: number;
+    businessName: string;
+    businessLogo?: string;
+    businessType: string;
+    totalStamps: number;
+    availableStamps: number;
+    usedStamps: number;
+    level: number;
+    lastStampDate?: Date;
+    stampsForReward: number;
+    rewardDescription?: string;
+  }>;
+  // Recompensas canjeadas recientemente
+  recentRewards?: Array<{
+    id: number;
+    rewardName: string;
+    businessName: string;
+    businessLogo?: string;
+    stampsSpent: number;
+    redemptionCode: string;
+    status: string;
+    redeemedAt: Date;
+    expiresAt?: Date;
+  }>;
 }
 
 // ======= DTOs PARA ACTUALIZACIÓN DE PERFILES =======
