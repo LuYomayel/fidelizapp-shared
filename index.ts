@@ -207,6 +207,25 @@ export interface IStamp {
   business?: IBusiness; // Relación con el negocio
 }
 
+export interface IStampHistory {
+  id?: number | string;
+  businessId: number | string;
+  code: string;
+  qrCode?: string;
+  stampType: StampType;
+  purchaseType?: PurchaseType;
+  stampValue: number; // Cantidad de sellos que otorga
+  description: string;
+  status: StampStatus;
+  expiresAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  usedAt?: Date;
+  usedBy?: number | string; // ID del cliente que lo usó
+  business?: IBusiness; // Relación con el negocio
+  client?: IClient; // Relación con el cliente
+}
+
 export interface IClientCard {
   id?: number | string;
   clientId: number | string;
@@ -620,6 +639,7 @@ export interface StampFilters extends PaginationParams {
   purchaseType?: PurchaseType;
   dateFrom?: Date;
   dateTo?: Date;
+  clientId?: number | string;
 }
 
 export interface ClientCardFilters extends PaginationParams {
