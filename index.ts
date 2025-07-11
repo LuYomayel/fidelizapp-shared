@@ -240,6 +240,14 @@ export interface IClientCard {
   client?: IClient;
   business?: IBusiness;
   redemptions?: IStampRedemption[];
+  // Nuevos campos que vienen de la API
+  nearestReward?: {
+    id: number;
+    name: string;
+    stampsCost: number;
+    description: string;
+  };
+  progressTarget: number;
 }
 
 export interface IBusinessClient {
