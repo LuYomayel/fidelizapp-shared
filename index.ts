@@ -157,6 +157,7 @@ export interface IBusiness {
   province?: string;
   logoPath?: string;
   type: BusinessType;
+  customType?: string;
   instagram?: string;
   tiktok?: string;
   website?: string;
@@ -401,6 +402,7 @@ export interface ICreateBusinessDto {
   postalCode?: string;
   province?: string;
   type: BusinessType;
+  customType?: string;
   instagram?: string;
   tiktok?: string;
   website?: string;
@@ -419,6 +421,7 @@ export interface IUpdateBusinessDto {
   postalCode?: string;
   province?: string;
   type?: BusinessType;
+  customType?: string;
   instagram?: string;
   tiktok?: string;
   website?: string;
@@ -735,6 +738,7 @@ export interface IBusinessProfile {
   province?: string;
   logoPath?: string;
   type: BusinessType;
+  customType?: string;
   instagram?: string;
   tiktok?: string;
   website?: string;
@@ -823,6 +827,7 @@ export interface IUpdateBusinessProfileDto {
   postalCode?: string;
   province?: string;
   type?: BusinessType;
+  customType?: string;
   instagram?: string;
   tiktok?: string;
   website?: string;
