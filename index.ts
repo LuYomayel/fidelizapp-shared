@@ -3,71 +3,71 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = "1-5 sucursales",
-  MEDIUM = "5-10 sucursales",
-  LARGE = "+10 sucursales",
+  SMALL = '1-5 sucursales',
+  MEDIUM = '5-10 sucursales',
+  LARGE = '+10 sucursales',
 }
 
 export enum BusinessType {
-  CAFETERIA = "Cafeteria",
-  RESTAURANT = "Restaurant",
-  PELUQUERIA = "Peluqueria",
-  MANICURA = "Manicura",
-  OTRO = "Otro",
+  CAFETERIA = 'Cafeteria',
+  RESTAURANT = 'Restaurant',
+  PELUQUERIA = 'Peluqueria',
+  MANICURA = 'Manicura',
+  OTRO = 'Otro',
 }
 
 export enum TransactionType {
-  ACUMULATION = "acumulacion",
-  EXCHANGE = "canje",
-  REWARD = "bonificacion",
-  PENALTY = "penalizacion",
+  ACUMULATION = 'acumulacion',
+  EXCHANGE = 'canje',
+  REWARD = 'bonificacion',
+  PENALTY = 'penalizacion',
 }
 
 export enum AdminRole {
-  OWNER = "propietario",
-  EMPLOYEE = "empleado",
+  OWNER = 'propietario',
+  EMPLOYEE = 'empleado',
 }
 
 export enum UserProvider {
-  EMAIL = "email",
-  GOOGLE = "google",
+  EMAIL = 'email',
+  GOOGLE = 'google',
 }
 
 // ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
 export enum StampType {
-  PURCHASE = "compra",
-  VISIT = "visita",
-  REFERRAL = "referencia",
-  BONUS = "bonus",
-  SPECIAL = "especial",
+  PURCHASE = 'compra',
+  VISIT = 'visita',
+  REFERRAL = 'referencia',
+  BONUS = 'bonus',
+  SPECIAL = 'especial',
 }
 
 export enum StampStatus {
-  ACTIVE = "activo",
-  USED = "usado",
-  EXPIRED = "expirado",
-  CANCELLED = "cancelado",
+  ACTIVE = 'activo',
+  USED = 'usado',
+  EXPIRED = 'expirado',
+  CANCELLED = 'cancelado',
 }
 
 export enum PurchaseType {
-  SMALL = "pequeña",
-  MEDIUM = "mediana",
-  LARGE = "grande",
-  SPECIAL = "especial",
+  SMALL = 'pequeña',
+  MEDIUM = 'mediana',
+  LARGE = 'grande',
+  SPECIAL = 'especial',
 }
 
 // ======= ENUMS PARA SISTEMA DE RECOMPENSAS =======
 export enum RedemptionStatus {
-  PENDING = "pending",
-  DELIVERED = "delivered",
-  EXPIRED = "expired",
-  CANCELLED = "cancelled",
+  PENDING = 'pending',
+  DELIVERED = 'delivered',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
 }
 
 export enum RewardType {
-  FREE_PRODUCT = "producto_gratis",
-  DISCOUNT = "descuento",
-  OTHER = "otro",
+  FREE_PRODUCT = 'producto_gratis',
+  DISCOUNT = 'descuento',
+  OTHER = 'otro',
 }
 
 // ======= INTERFACES PARA USUARIOS/AUTENTICACIÓN =======
@@ -76,27 +76,27 @@ export enum RewardType {
 export interface BaseUser {
   userId: number;
   username: string;
-  type: "client" | "business";
+  type: 'client' | 'business';
 }
 
 export interface ClientUser extends BaseUser {
-  type: "client";
+  type: 'client';
   clientId: number;
 
   email: string;
   emailVerified: boolean;
-  provider: "email" | "google";
+  provider: 'email' | 'google';
   firstName?: string;
   lastName?: string;
   picture?: string;
 }
 
 export interface BusinessUser extends BaseUser {
-  type: "business";
+  type: 'business';
   businessId: number;
   email: string;
   emailVerified: boolean;
-  provider: "email" | "google";
+  provider: 'email' | 'google';
   picture?: string;
 }
 
@@ -107,20 +107,20 @@ export type AuthenticatedUser = ClientUser | BusinessUser;
 export interface BaseJwtPayload {
   username: string;
   sub: number;
-  type: "client" | "business";
+  type: 'client' | 'business';
 }
 
 export interface ClientJwtPayload extends BaseJwtPayload {
-  type: "client";
+  type: 'client';
   email: string;
-  provider: "email" | "google";
+  provider: 'email' | 'google';
   emailVerified: boolean;
 }
 
 export interface BusinessJwtPayload extends BaseJwtPayload {
-  type: "business";
+  type: 'business';
   email: string;
-  provider: "email" | "google";
+  provider: 'email' | 'google';
   emailVerified: boolean;
 }
 
@@ -128,11 +128,11 @@ export type JwtPayload = ClientJwtPayload | BusinessJwtPayload;
 
 // Type guards para verificar el tipo de usuario
 export function isClientUser(user: AuthenticatedUser): user is ClientUser {
-  return user.type === "client";
+  return user.type === 'client';
 }
 
 export function isBusinessUser(user: AuthenticatedUser): user is BusinessUser {
-  return user.type === "business";
+  return user.type === 'business';
 }
 
 // Interfaces para request con usuario autenticado
@@ -350,13 +350,13 @@ export interface IRedemptionDashboard {
 
 // Interfaz extendida para RewardRedemption que incluye ClientCard con recompensas
 export interface IRewardRedemptionWithClientCard
-  extends Omit<IRewardRedemption, "clientCard"> {
+  extends Omit<IRewardRedemption, 'clientCard'> {
   clientCard: IClientCardWithReward;
 }
 
 export interface IDeliverRedemptionDto {
   redemptionId: number;
-  deliveredBy: string;
+  employeeId: number;
   notes?: string;
 }
 
@@ -562,7 +562,7 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   businessName?: string;
-  type: "business" | "client";
+  type: 'business' | 'client';
   provider: UserProvider;
   profilePicture?: string;
   isActive: boolean;
@@ -595,7 +595,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<ICreateClientDto, "password"> {
+  extends Omit<ICreateClientDto, 'password'> {
   password?: string;
 }
 
@@ -622,7 +622,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: "ASC" | "DESC";
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 // ======= INTERFACES PARA FILTROS =======
@@ -918,7 +918,7 @@ export interface IClientSettings {
   };
   preferences: {
     language: string;
-    theme: "light" | "dark" | "auto";
+    theme: 'light' | 'dark' | 'auto';
   };
 }
 
