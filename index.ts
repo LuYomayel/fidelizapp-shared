@@ -882,11 +882,8 @@ export interface IUpdateBusinessProfileDto {
 }
 
 export interface IUpdateClientProfileDto {
-  email?: string;
   firstName?: string;
   lastName?: string;
-  password?: string; // Para cambio de contraseña
-  currentPassword?: string; // Para validar cambio de contraseña
 }
 
 export interface IChangePasswordDto {
