@@ -948,6 +948,34 @@ export type CreateBusinessDto = ICreateBusinessDto; // Mantener compatibilidad
 export type UpdateBusinessDto = IUpdateBusinessDto; // Mantener compatibilidad
 export type LoginBusinessDto = ILoginBusinessDto; // Mantener compatibilidad
 
+// ======= INTERFACES DE EMPLEADOS =======
+export interface IEmployee {
+  id: number;
+  firstName: string;
+  lastName: string;
+  isDefault: boolean;
+  businessId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICreateEmployeeDto {
+  firstName: string;
+  lastName: string;
+  isDefault?: boolean;
+}
+
+export interface IUpdateEmployeeDto {
+  firstName?: string;
+  lastName?: string;
+  isDefault?: boolean;
+}
+
+export interface IEmployeeFilters extends PaginationParams {
+  search?: string;
+  isDefault?: boolean;
+}
+
 // Nuevos tipos para el sistema de sellos
 export type Stamp = IStamp;
 export type ClientCard = IClientCard;
