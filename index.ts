@@ -192,6 +192,8 @@ export interface IClient {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  emailVerified: boolean;
+  mustChangePassword: boolean;
 }
 
 // ======= NUEVAS INTERFACES PARA SISTEMA DE SELLOS =======
