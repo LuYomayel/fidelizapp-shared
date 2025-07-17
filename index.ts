@@ -154,6 +154,8 @@ export interface IBusiness {
   businessName: string;
   email: string;
   password?: string;
+  adminFirstName: string; // Nombre del administrador del negocio
+  adminLastName: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
   size: BusinessSize;
@@ -169,6 +171,10 @@ export interface IBusiness {
   website?: string;
   stampsForReward?: number; // Cantidad de sellos para recompensa
   rewardDescription?: string; // Descripción de la recompensa
+  emailVerified?: boolean; // Si el email ha sido verificado
+  emailVerificationCode?: string; // Código de verificación de email
+  emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
+  mustChangePassword?: boolean; // Si debe cambiar la contraseña
   createdAt?: Date;
   updatedAt?: Date;
   active?: boolean;
@@ -439,6 +445,8 @@ export interface ICreateBusinessDto {
   businessName: string;
   email: string;
   password: string;
+  adminFirstName: string; // Nombre del administrador del negocio
+  adminLastName: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
   size: BusinessSize;
@@ -458,6 +466,8 @@ export interface IUpdateBusinessDto {
   businessName?: string;
   email?: string;
   password?: string;
+  adminFirstName?: string; // Nombre del administrador del negocio
+  adminLastName?: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
   size?: BusinessSize;
@@ -775,6 +785,8 @@ export interface IBusinessProfile {
   id: number;
   businessName: string;
   email: string;
+  adminFirstName: string; // Nombre del administrador del negocio
+  adminLastName: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
   size: BusinessSize;
@@ -790,6 +802,8 @@ export interface IBusinessProfile {
   website?: string;
   stampsForReward: number;
   rewardDescription?: string;
+  emailVerified: boolean;
+  mustChangePassword: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -865,6 +879,8 @@ export interface IClientProfile {
 export interface IUpdateBusinessProfileDto {
   businessName?: string;
   email?: string;
+  adminFirstName?: string; // Nombre del administrador del negocio
+  adminLastName?: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
   size?: BusinessSize;
@@ -974,6 +990,22 @@ export interface IUpdateEmployeeDto {
 export interface IEmployeeFilters extends PaginationParams {
   search?: string;
   isDefault?: boolean;
+}
+
+// ======= INTERFACES PARA VERIFICACIÓN DE EMAIL =======
+export interface IVerifyEmailDto {
+  email: string;
+  verificationCode: string;
+}
+
+export interface IResendVerificationCodeDto {
+  email: string;
+}
+
+export interface IEmailVerificationResponse {
+  success: boolean;
+  message: string;
+  redirectTo?: string;
 }
 
 // Nuevos tipos para el sistema de sellos

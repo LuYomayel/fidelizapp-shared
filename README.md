@@ -1,1 +1,1 @@
-# fidelizapp-shared
+# stampia-shared
