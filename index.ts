@@ -920,7 +920,20 @@ export interface IBusinessQRData {
   businessId: number;
   businessName: string;
   qrCode: string; // Base64 del QR generado
-  qrUrl: string; // URL para escanear y acceder al negocio
+  qrUrl: string; // URL que contiene el QR
+}
+
+// Nueva interfaz para solicitud de asociación con negocio
+export interface IJoinBusinessDto {
+  businessId: number;
+}
+
+// Nueva interfaz para respuesta de asociación con negocio
+export interface IJoinBusinessResponse {
+  clientCard: IClientCard;
+  business: IBusiness;
+  message: string;
+  isNewCard: boolean; // Si es una nueva tarjeta o ya existía
 }
 
 export interface IClientSettings {
