@@ -405,6 +405,90 @@ export interface IDashboard {
   retentionGrowth: number;
 }
 
+// ======= INTERFAZ PARA ESTADÍSTICAS COMPLETAS =======
+export interface IStatistics {
+  // Métricas principales
+  stampsIssued: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number; // Porcentaje de crecimiento
+  };
+
+  activeClients: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number;
+  };
+
+  rewardsRedeemed: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number;
+  };
+
+  clientRetention: {
+    rate: number; // Porcentaje de retención
+    currentPeriod: number; // Retención período actual
+    previousPeriod: number; // Retención período anterior
+    growth: number; // Cambio en retención
+  };
+
+  // Métricas avanzadas
+  visitFrequency: {
+    averageStampsPerClient: number;
+    averageVisitsPerMonth: number;
+    mostActiveClients: Array<{
+      clientId: number;
+      clientName: string;
+      totalStamps: number;
+      lastVisit: Date;
+    }>;
+  };
+
+  completionTime: {
+    averageDaysToComplete: number;
+    fastestCompletion: number;
+    slowestCompletion: number;
+    completionDistribution: Array<{
+      daysRange: string;
+      clientCount: number;
+    }>;
+  };
+
+  conversionRate: {
+    stampsToRewards: number; // % de sellos que se convierten en recompensas
+    clientsWhoRedeem: number; // % de clientes que canjean al menos una recompensa
+    averageStampsBeforeRedemption: number;
+  };
+
+  // Datos adicionales para insights
+  periodComparison: {
+    period: 'month' | 'quarter' | 'year';
+    current: Date;
+    previous: Date;
+  };
+
+  recentActivity: {
+    newClients: Array<{
+      clientId: number;
+      clientName: string;
+      email: string;
+      joinedAt: Date;
+      totalStamps: number;
+      availableStamps: number;
+    }>;
+    recentRedemptions: Array<{
+      clientName: string;
+      rewardName: string;
+      redeemedAt: Date;
+      stampsSpent: number;
+    }>;
+  };
+}
+
 export interface Admin {
   id: string;
   name: string;
