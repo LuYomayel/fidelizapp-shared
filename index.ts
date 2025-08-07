@@ -76,7 +76,7 @@ export enum RewardType {
 export interface BaseUser {
   userId: number;
   username: string;
-  type: 'client' | 'business';
+  type: 'client' | 'business' | 'platform';
 }
 
 export interface ClientUser extends BaseUser {
@@ -100,14 +100,20 @@ export interface BusinessUser extends BaseUser {
   picture?: string;
 }
 
+export interface PlatformAdminUser extends BaseUser {
+  type: 'platform';
+  email: string;
+  role: 'superadmin' | 'admin';
+}
+
 // Union type para req.user
-export type AuthenticatedUser = ClientUser | BusinessUser;
+export type AuthenticatedUser = ClientUser | BusinessUser | PlatformAdminUser;
 
 // Interfaces para el payload del JWT
 export interface BaseJwtPayload {
   username: string;
   sub: number;
-  type: 'client' | 'business';
+  type: 'client' | 'business' | 'platform';
 }
 
 export interface ClientJwtPayload extends BaseJwtPayload {
@@ -124,7 +130,16 @@ export interface BusinessJwtPayload extends BaseJwtPayload {
   emailVerified: boolean;
 }
 
-export type JwtPayload = ClientJwtPayload | BusinessJwtPayload;
+export interface PlatformJwtPayload extends BaseJwtPayload {
+  type: 'platform';
+  email: string;
+  role: 'superadmin' | 'admin';
+}
+
+export type JwtPayload =
+  | ClientJwtPayload
+  | BusinessJwtPayload
+  | PlatformJwtPayload;
 
 // Type guards para verificar el tipo de usuario
 export function isClientUser(user: AuthenticatedUser): user is ClientUser {
