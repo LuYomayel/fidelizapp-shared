@@ -70,6 +70,30 @@ export enum RewardType {
   OTHER = 'otro',
 }
 
+// ======= ENUMS/DTOS PARA ANUNCIOS =======
+export enum AnnouncementType {
+  NEWS = 'NEWS',
+  EVENT = 'EVENT',
+  PROMOTION = 'PROMOTION',
+}
+
+export interface ICreateAnnouncementDto {
+  title: string;
+  content: string;
+  type: AnnouncementType;
+  startDate?: Date;
+  endDate?: Date;
+  allDay?: boolean; // Evento de día completo
+  startTime?: string | null; // HH:MM
+  endTime?: string | null; // HH:MM
+}
+
+export interface IUpdateAnnouncementDto
+  extends Partial<ICreateAnnouncementDto> {
+  isPublished?: boolean;
+  imagePath?: string | null;
+}
+
 // ======= INTERFACES PARA USUARIOS/AUTENTICACIÓN =======
 // Interfaces para tipificar req.user en diferentes contextos
 
