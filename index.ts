@@ -812,7 +812,7 @@ export interface RedeemStampForm {
 
 export interface StampFilters extends PaginationParams {
   status?: StampStatus;
-  stampType?: StampType;
+  //stampType?: StampType;
   purchaseType?: PurchaseType;
   dateFrom?: Date;
   dateTo?: Date;
