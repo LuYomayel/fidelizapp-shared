@@ -155,7 +155,7 @@ export interface BaseJwtPayload {
   username: string;
   sub: number;
   type: 'client' | 'business' | 'platform';
-  suspended: Date | null;
+  suspended: string | null;
 }
 
 export interface ClientJwtPayload extends BaseJwtPayload {
@@ -237,6 +237,7 @@ export interface IBusiness {
   active?: boolean;
   suspendedAt?: Date | null;
   suspendedReason?: string;
+  suspended?: string | null; // Para respuestas de login
 }
 
 export interface IClient {
@@ -255,6 +256,7 @@ export interface IClient {
   mustChangePassword: boolean;
   suspendedAt?: Date | null;
   suspendedReason?: string;
+  suspended?: string | null; // Para respuestas de login
 }
 
 // ======= NUEVAS INTERFACES PARA SISTEMA DE SELLOS =======
