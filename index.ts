@@ -285,6 +285,23 @@ export enum SubscriptionStatus {
   CANCELLED = 'cancelled',
 }
 
+// ======= ENUMS PARA CÓDIGOS PROMOCIONALES =======
+export enum PromoCodeType {
+  UNLOCK_PLAN = 'unlock_plan', // Desbloquea un plan específico (ej: tier beta)
+  DISCOUNT_PERCENTAGE = 'discount_percentage', // Descuento porcentual (ej: 20% off)
+  DISCOUNT_FIXED = 'discount_fixed', // Descuento fijo (ej: $500 off)
+  FREE_TRIAL = 'free_trial', // Período de prueba gratis extendido
+  FREE_MONTHS = 'free_months', // Meses gratis (ej: primer mes gratis)
+  UPGRADE_PLAN = 'upgrade_plan', // Upgrade gratuito a plan superior por X tiempo
+}
+
+export enum PromoCodeStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  EXPIRED = 'expired',
+  EXHAUSTED = 'exhausted', // Cuando se agotaron los usos
+}
+
 export interface ISubscriptionPlan {
   id: number;
   name: string;
@@ -307,8 +324,18 @@ export interface ISubscriptionPlan {
 export interface IPromotionalCode {
   id: number;
   code: string; // Código único
-  subscriptionPlanId: number; // Plan que desbloquea
-  maxUses: number; // Máximo número de usos
+  type: PromoCodeType; // Tipo de código promocional
+  status: PromoCodeStatus; // Estado del código
+  
+  // Configuración según tipo
+  subscriptionPlanId?: number; // Plan que desbloquea (para UNLOCK_PLAN)
+  targetPlanId?: number; // Plan objetivo (para UPGRADE_PLAN)
+  discountValue?: number; // Valor del descuento (porcentaje o monto fijo)
+  freeMonths?: number; // Cantidad de meses gratis (para FREE_MONTHS)
+  trialDays?: number; // Días de prueba extendidos (para FREE_TRIAL)
+  
+  // Configuración general
+  maxUses?: number; // Máximo número de usos (null = ilimitado)
   currentUses: number; // Usos actuales
   expiresAt?: Date; // Fecha de expiración (opcional)
   isActive: boolean;
@@ -317,8 +344,9 @@ export interface IPromotionalCode {
   createdAt: Date;
   updatedAt: Date;
 
-  // Relación
-  subscriptionPlan?: ISubscriptionPlan;
+  // Relaciones
+  subscriptionPlan?: ISubscriptionPlan; // Plan que desbloquea
+  targetPlan?: ISubscriptionPlan; // Plan objetivo para upgrade
 }
 
 export interface IBusinessSubscription {
@@ -364,7 +392,16 @@ export interface IUpdateSubscriptionPlanDto
 
 export interface ICreatePromotionalCodeDto {
   code: string;
-  subscriptionPlanId: number;
+  type: PromoCodeType;
+  
+  // Configuración según tipo
+  subscriptionPlanId?: number; // Para UNLOCK_PLAN
+  targetPlanId?: number; // Para UPGRADE_PLAN
+  discountValue?: number; // Para DISCOUNT_PERCENTAGE y DISCOUNT_FIXED
+  freeMonths?: number; // Para FREE_MONTHS
+  trialDays?: number; // Para FREE_TRIAL
+  
+  // Configuración general
   maxUses?: number;
   expiresAt?: Date;
   isActive?: boolean;
@@ -373,17 +410,28 @@ export interface ICreatePromotionalCodeDto {
 
 export interface IUpdatePromotionalCodeDto
   extends Partial<ICreatePromotionalCodeDto> {
-  isActive?: boolean;
+  status?: PromoCodeStatus;
 }
 
 export interface IValidatePromotionalCodeDto {
   code: string;
+  subscriptionPlanId?: number; // Para validar si el código aplica a un plan específico
 }
 
 export interface IValidatePromotionalCodeResponse {
   valid: boolean;
-  plan?: ISubscriptionPlan;
+  code?: IPromotionalCode;
   message: string;
+  
+  // Información específica según tipo
+  unlocksPlan?: ISubscriptionPlan;
+  discount?: {
+    type: 'percentage' | 'fixed';
+    value: number;
+  };
+  freeMonths?: number;
+  trialDays?: number;
+  upgradesPlan?: ISubscriptionPlan;
 }
 
 export interface ISubscriptionSelectionDto {
