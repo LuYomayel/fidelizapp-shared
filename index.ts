@@ -238,6 +238,10 @@ export interface IBusiness {
   suspendedAt?: Date | null;
   suspendedReason?: string;
   suspended?: string | null; // Para respuestas de login
+  
+  // Información de suscripción
+  subscriptionPlanId?: number;
+  currentSubscription?: IBusinessSubscription;
 }
 
 export interface IClient {
@@ -257,6 +261,121 @@ export interface IClient {
   suspendedAt?: Date | null;
   suspendedReason?: string;
   suspended?: string | null; // Para respuestas de login
+}
+
+// ======= INTERFACES PARA SISTEMA DE SUSCRIPCIONES =======
+
+export enum SubscriptionTier {
+  TIER_0 = 'tier_0', // Beta/Conejillo de indias (oculto, activado por código)
+  TIER_1 = 'tier_1', // Plan básico
+  TIER_2 = 'tier_2', // Plan intermedio
+  TIER_3 = 'tier_3', // Plan premium
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
+}
+
+export interface ISubscriptionPlan {
+  id: number;
+  name: string;
+  description: string;
+  tier: SubscriptionTier;
+  price: number; // Precio en centavos
+  currency: string; // 'ARS', 'USD', etc.
+  billingPeriod: 'monthly' | 'yearly';
+  features: string[]; // Lista de características incluidas
+  maxClients?: number; // Límite de clientes (null = ilimitado)
+  maxStamps?: number; // Límite de sellos por mes (null = ilimitado)
+  maxRewards?: number; // Límite de recompensas activas (null = ilimitado)
+  isPublic: boolean; // Si se muestra públicamente o requiere código
+  isActive: boolean; // Si está disponible para contratación
+  trialDays?: number; // Días de prueba gratuita
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IPromotionalCode {
+  id: number;
+  code: string; // Código único
+  subscriptionPlanId: number; // Plan que desbloquea
+  maxUses: number; // Máximo número de usos
+  currentUses: number; // Usos actuales
+  expiresAt?: Date; // Fecha de expiración (opcional)
+  isActive: boolean;
+  createdBy: number; // ID del admin que lo creó
+  description?: string; // Descripción del código
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IBusinessSubscription {
+  id: number;
+  businessId: number;
+  subscriptionPlanId: number;
+  status: SubscriptionStatus;
+  startDate: Date;
+  endDate?: Date; // null para suscripciones permanentes
+  promotionalCodeId?: number; // Si se activó con código promocional
+  paymentId?: string; // ID de pago externo (Stripe, MercadoPago, etc.)
+  autoRenew: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Relaciones
+  plan?: ISubscriptionPlan;
+  business?: IBusiness;
+  promotionalCode?: IPromotionalCode;
+}
+
+// DTOs para crear/actualizar
+export interface ICreateSubscriptionPlanDto {
+  name: string;
+  description: string;
+  tier: SubscriptionTier;
+  price: number;
+  currency: string;
+  billingPeriod: 'monthly' | 'yearly';
+  features: string[];
+  maxClients?: number;
+  maxStamps?: number;
+  maxRewards?: number;
+  isPublic: boolean;
+  trialDays?: number;
+}
+
+export interface IUpdateSubscriptionPlanDto extends Partial<ICreateSubscriptionPlanDto> {
+  isActive?: boolean;
+}
+
+export interface ICreatePromotionalCodeDto {
+  code: string;
+  subscriptionPlanId: number;
+  maxUses: number;
+  expiresAt?: Date;
+  description?: string;
+}
+
+export interface IUpdatePromotionalCodeDto extends Partial<ICreatePromotionalCodeDto> {
+  isActive?: boolean;
+}
+
+export interface IValidatePromotionalCodeDto {
+  code: string;
+}
+
+export interface IValidatePromotionalCodeResponse {
+  valid: boolean;
+  plan?: ISubscriptionPlan;
+  message: string;
+}
+
+export interface ISubscriptionSelectionDto {
+  subscriptionPlanId: number;
+  promotionalCode?: string;
 }
 
 // ======= NUEVAS INTERFACES PARA SISTEMA DE SELLOS =======
