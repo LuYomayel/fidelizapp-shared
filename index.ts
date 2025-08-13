@@ -353,6 +353,7 @@ export interface ICreateSubscriptionPlanDto {
   maxStamps?: number;
   maxRewards?: number;
   isPublic: boolean;
+  isActive: boolean;
   trialDays?: number;
 }
 
