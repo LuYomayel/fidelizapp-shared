@@ -365,8 +365,9 @@ export interface IUpdateSubscriptionPlanDto
 export interface ICreatePromotionalCodeDto {
   code: string;
   subscriptionPlanId: number;
-  maxUses: number;
+  maxUses?: number;
   expiresAt?: Date;
+  isActive?: boolean;
   description?: string;
 }
 
