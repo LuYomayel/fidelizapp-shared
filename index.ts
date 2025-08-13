@@ -270,11 +270,11 @@ export type SubscriptionTier = string;
 
 // Tiers predefinidos comunes (puedes crear más según necesites)
 export const SUBSCRIPTION_TIERS = {
-  BETA: 'beta',           // Plan beta/conejillo de indias (oculto, activado por código)
-  FREE: 'free',           // Plan gratuito
-  BASIC: 'basic',         // Plan básico
-  STANDARD: 'standard',   // Plan estándar
-  PREMIUM: 'premium',     // Plan premium
+  BETA: 'beta', // Plan beta/conejillo de indias (oculto, activado por código)
+  FREE: 'free', // Plan gratuito
+  BASIC: 'basic', // Plan básico
+  STANDARD: 'standard', // Plan estándar
+  PREMIUM: 'premium', // Plan premium
   ENTERPRISE: 'enterprise', // Plan empresarial
 } as const;
 
@@ -316,6 +316,9 @@ export interface IPromotionalCode {
   description?: string; // Descripción del código
   createdAt: Date;
   updatedAt: Date;
+
+  // Relación
+  subscriptionPlan?: ISubscriptionPlan;
 }
 
 export interface IBusinessSubscription {
