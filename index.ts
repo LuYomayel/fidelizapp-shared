@@ -238,7 +238,7 @@ export interface IBusiness {
   suspendedAt?: Date | null;
   suspendedReason?: string;
   suspended?: string | null; // Para respuestas de login
-  
+
   // Información de suscripción
   subscriptionPlanId?: number;
   currentSubscription?: IBusinessSubscription;
@@ -265,12 +265,18 @@ export interface IClient {
 
 // ======= INTERFACES PARA SISTEMA DE SUSCRIPCIONES =======
 
-export enum SubscriptionTier {
-  TIER_0 = 'tier_0', // Beta/Conejillo de indias (oculto, activado por código)
-  TIER_1 = 'tier_1', // Plan básico
-  TIER_2 = 'tier_2', // Plan intermedio
-  TIER_3 = 'tier_3', // Plan premium
-}
+// Tipo más flexible para tiers de suscripción
+export type SubscriptionTier = string;
+
+// Tiers predefinidos comunes (puedes crear más según necesites)
+export const SUBSCRIPTION_TIERS = {
+  BETA: 'beta',           // Plan beta/conejillo de indias (oculto, activado por código)
+  FREE: 'free',           // Plan gratuito
+  BASIC: 'basic',         // Plan básico
+  STANDARD: 'standard',   // Plan estándar
+  PREMIUM: 'premium',     // Plan premium
+  ENTERPRISE: 'enterprise', // Plan empresarial
+} as const;
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
@@ -324,7 +330,7 @@ export interface IBusinessSubscription {
   autoRenew: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Relaciones
   plan?: ISubscriptionPlan;
   business?: IBusiness;
@@ -347,7 +353,8 @@ export interface ICreateSubscriptionPlanDto {
   trialDays?: number;
 }
 
-export interface IUpdateSubscriptionPlanDto extends Partial<ICreateSubscriptionPlanDto> {
+export interface IUpdateSubscriptionPlanDto
+  extends Partial<ICreateSubscriptionPlanDto> {
   isActive?: boolean;
 }
 
@@ -359,7 +366,8 @@ export interface ICreatePromotionalCodeDto {
   description?: string;
 }
 
-export interface IUpdatePromotionalCodeDto extends Partial<ICreatePromotionalCodeDto> {
+export interface IUpdatePromotionalCodeDto
+  extends Partial<ICreatePromotionalCodeDto> {
   isActive?: boolean;
 }
 
