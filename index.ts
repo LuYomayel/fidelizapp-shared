@@ -84,6 +84,7 @@ export interface IAnnouncement {
   content: string;
   type: AnnouncementType;
   imagePath?: string;
+  imageUrl?: string;
   startDate?: Date | null;
   endDate?: Date | null;
   allDay?: boolean;
@@ -326,14 +327,14 @@ export interface IPromotionalCode {
   code: string; // Código único
   type: PromoCodeType; // Tipo de código promocional
   status: PromoCodeStatus; // Estado del código
-  
+
   // Configuración según tipo
   subscriptionPlanId?: number; // Plan que desbloquea (para UNLOCK_PLAN)
   targetPlanId?: number; // Plan objetivo (para UPGRADE_PLAN)
   discountValue?: number; // Valor del descuento (porcentaje o monto fijo)
   freeMonths?: number; // Cantidad de meses gratis (para FREE_MONTHS)
   trialDays?: number; // Días de prueba extendidos (para FREE_TRIAL)
-  
+
   // Configuración general
   maxUses?: number; // Máximo número de usos (null = ilimitado)
   currentUses: number; // Usos actuales
@@ -393,14 +394,14 @@ export interface IUpdateSubscriptionPlanDto
 export interface ICreatePromotionalCodeDto {
   code: string;
   type: PromoCodeType;
-  
+
   // Configuración según tipo
   subscriptionPlanId?: number; // Para UNLOCK_PLAN
   targetPlanId?: number; // Para UPGRADE_PLAN
   discountValue?: number; // Para DISCOUNT_PERCENTAGE y DISCOUNT_FIXED
   freeMonths?: number; // Para FREE_MONTHS
   trialDays?: number; // Para FREE_TRIAL
-  
+
   // Configuración general
   maxUses?: number;
   expiresAt?: Date;
@@ -422,7 +423,7 @@ export interface IValidatePromotionalCodeResponse {
   valid: boolean;
   code?: IPromotionalCode;
   message: string;
-  
+
   // Información específica según tipo
   unlocksPlan?: ISubscriptionPlan;
   discount?: {
@@ -1131,6 +1132,7 @@ export interface IBusinessProfile {
   postalCode?: string;
   province?: string;
   logoPath?: string;
+  logoUrl?: string;
   type: BusinessType;
   customType?: string;
   instagram?: string;
@@ -1150,6 +1152,7 @@ export interface IClientProfile {
   firstName: string;
   lastName: string;
   profilePicture?: string;
+  profilePictureUrl?: string;
   provider: UserProvider;
   emailVerified: boolean;
   isActive: boolean;
