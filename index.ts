@@ -504,6 +504,8 @@ export interface IClientCardWithReward extends IClientCard {
   };
   progressTarget: number;
   availableRewards: IReward[];
+  rewardStamps?: number[]; // TODOS los sellos que tienen recompensas (sin importar si se pueden canjear)
+  redeemableStamps?: number[]; // Solo los sellos que YA se pueden canjear
 }
 
 export interface IBusinessClient {
