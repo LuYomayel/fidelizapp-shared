@@ -695,6 +695,10 @@ export interface IStatistics {
   // Métricas avanzadas
   visitFrequency: {
     averageDaysBetweenStamps: number; // Promedio de días entre sellos obtenidos
+    medianDaysBetweenStamps: number; // Mediana de días entre sellos obtenidos
+    trailing90dAvg: number; // Promedio de días entre sellos obtenidos en los últimos 90 días
+    trailing90dMedian: number; // Mediana de días entre sellos obtenidos en los últimos 90 días
+    growth90d: number; // Cambio porcentual de días entre sellos obtenidos en los últimos 90 días
     averageStampsPerClient: number;
     averageVisitsPerMonth: number;
     mostActiveClients: Array<{
@@ -707,9 +711,10 @@ export interface IStatistics {
 
   completionTime: {
     averageDaysToComplete: number; // Días promedio desde primer sello hasta primera recompensa en el mes
-    currentMonth: number; // Tiempo promedio del mes actual
-    previousMonth: number; // Tiempo promedio del mes anterior
-    growth: number; // Cambio porcentual
+    medianDaysToComplete: number; // Mediana de días desde primer sello hasta primera recompensa en el mes
+    trailing180dAvg: number; // Promedio de días desde primer sello hasta primera recompensa en los últimos 180 días
+    prev180dAvg: number; // Promedio de días desde primer sello hasta primera recompensa en los últimos 180 días
+    growth180d: number; // Cambio porcentual de días desde primer sello hasta primera recompensa en los últimos 180 días
     fastestCompletion: number;
     slowestCompletion: number;
     completionDistribution: Array<{
