@@ -1363,6 +1363,20 @@ export interface IEmailVerificationResponse {
   redirectTo?: string;
 }
 
+export interface ICreateEOIDto {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
+
+export interface IEOI {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
 // Nuevos tipos para el sistema de sellos
 export type Stamp = IStamp;
 export type ClientCard = IClientCard;
