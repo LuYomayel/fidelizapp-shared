@@ -13,6 +13,8 @@ export enum BusinessType {
   RESTAURANT = 'Restaurant',
   PELUQUERIA = 'Peluqueria',
   MANICURA = 'Manicura',
+  VINERIA = 'Vineria',
+  LAVADERO_DE_AUTOS = 'Lavadero de autos',
   OTRO = 'Otro',
 }
 
