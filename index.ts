@@ -1523,7 +1523,7 @@ export interface IMpPreapprovalPlanRequest {
       id: string;
     }>;
   };
-  back_url?: string;
+  back_url: string; // Requerido por MP
   free_trial?: {
     frequency: number;
     frequency_type: 'days' | 'months';
@@ -1534,7 +1534,7 @@ export interface IMpPreapprovalRequest {
   preapproval_plan_id: string;
   reason: string;
   payer_email: string;
-  card_token?: string;
+  card_token_id?: string;
   auto_recurring: {
     frequency: number;
     frequency_type: 'days' | 'months';
