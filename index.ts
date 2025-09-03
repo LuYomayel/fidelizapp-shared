@@ -1401,3 +1401,174 @@ export type CreateStampDto = ICreateStampDto;
 export type RedeemStampDto = IRedeemStampDto;
 export type StampSummaryDto = IStampSummaryDto;
 export type ClientCardSummaryDto = IClientCardSummaryDto;
+
+// ======= MERCADO PAGO SUBSCRIPTIONS =======
+
+// Estados de intents de suscripción
+export enum MpSubscriptionIntentStatus {
+  INITIATED = 'initiated',
+  CREATED_IN_MP = 'created_in_mp',
+  CONFIRMED = 'confirmed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+}
+
+// Estados de preapproval en MP
+export enum MpPreapprovalStatus {
+  PENDING = 'pending',
+  AUTHORIZED = 'authorized',
+  PAUSED = 'paused',
+  CANCELLED = 'cancelled',
+}
+
+// Estados de planes en MP
+export enum MpPreapprovalPlanStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
+// Tipos de webhook de MP
+export enum MpWebhookTopic {
+  SUBSCRIPTION_PREAPPROVAL = 'subscription_preapproval',
+  SUBSCRIPTION_AUTHORIZED_PAYMENT = 'subscription_authorized_payment',
+  SUBSCRIPTION_PREAPPROVAL_PLAN = 'subscription_preapproval_plan',
+}
+
+// ======= INTERFACES PARA MERCADO PAGO =======
+
+export interface IMpSubscriptionPlanMapping {
+  id: number;
+  planId: number;
+  mpPreapprovalPlanId: string;
+  status: string;
+  raw: any;
+  createdAt: Date;
+  updatedAt: Date;
+  plan?: ISubscriptionPlan;
+}
+
+export interface IMpBusinessSubscriptionMapping {
+  id: number;
+  businessSubscriptionId?: number;
+  mpPreapprovalId: string;
+  status: string;
+  payerEmail: string;
+  externalReference?: string;
+  nextPaymentDate?: Date;
+  raw: any;
+  createdAt: Date;
+  updatedAt: Date;
+  businessSubscription?: IBusinessSubscription;
+}
+
+export interface IMpSubscriptionIntent {
+  id: number;
+  businessId: number;
+  planId: number;
+  promotionalCodeId?: number;
+  mpPreapprovalPlanId?: string;
+  mpPreapprovalId?: string;
+  status: MpSubscriptionIntentStatus;
+  idempotencyKey: string;
+  payload: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ======= DTOs PARA MERCADO PAGO =======
+
+export interface ICreateMpIntentDto {
+  businessId: number;
+  planId: number;
+  payerEmail: string;
+  promotionalCodeId?: number;
+  externalReference?: string;
+  cardToken?: string;
+}
+
+export interface IUpdateMpPreapprovalDto {
+  status?: 'paused' | 'authorized' | 'cancelled';
+  cardToken?: string;
+  billingDay?: number;
+}
+
+export interface IMpWebhookEvent {
+  id?: string;
+  live_mode: boolean;
+  type: string;
+  date_created: string;
+  application_id: string;
+  user_id: string;
+  version: string;
+  api_version: string;
+  action: string;
+  data: {
+    id: string;
+  };
+}
+
+export interface IMpPreapprovalPlanRequest {
+  reason: string;
+  auto_recurring: {
+    frequency: number;
+    frequency_type: 'days' | 'months';
+    transaction_amount: number;
+    currency_id: string;
+  };
+  payment_methods_allowed?: {
+    payment_types?: Array<{
+      id: string;
+    }>;
+    payment_methods?: Array<{
+      id: string;
+    }>;
+  };
+  back_url?: string;
+  free_trial?: {
+    frequency: number;
+    frequency_type: 'days' | 'months';
+  };
+}
+
+export interface IMpPreapprovalRequest {
+  preapproval_plan_id: string;
+  reason: string;
+  payer_email: string;
+  card_token?: string;
+  auto_recurring: {
+    frequency: number;
+    frequency_type: 'days' | 'months';
+    transaction_amount: number;
+    currency_id: string;
+    start_date?: string;
+    end_date?: string;
+  };
+  back_url?: string;
+  external_reference?: string;
+  status?: string;
+}
+
+// ======= RESPONSES DE MERCADO PAGO =======
+
+export interface IMpCreateIntentResponse {
+  intentId: number;
+  mpPreapprovalId: string;
+  status: MpSubscriptionIntentStatus;
+  idempotencyKey: string;
+}
+
+export interface IMpPlanMappingResponse {
+  planId: number;
+  mpPreapprovalPlanId: string;
+  status: string;
+  created: boolean;
+}
+
+export interface IMpPreapprovalSyncResponse {
+  mpPreapprovalId: string;
+  status: string;
+  payerEmail: string;
+  nextPaymentDate?: Date;
+  raw: any;
+  updated: boolean;
+}
