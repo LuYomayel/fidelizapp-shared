@@ -1535,7 +1535,7 @@ export interface IMpPreapprovalRequest {
   reason: string;
   payer_email: string;
   card_token_id?: string;
-  auto_recurring: {
+  auto_recurring?: {
     frequency: number;
     frequency_type: 'days' | 'months';
     transaction_amount: number;
@@ -1555,6 +1555,7 @@ export interface IMpCreateIntentResponse {
   mpPreapprovalId: string;
   status: MpSubscriptionIntentStatus;
   idempotencyKey: string;
+  checkoutUrl: string;
 }
 
 export interface IMpPlanMappingResponse {
