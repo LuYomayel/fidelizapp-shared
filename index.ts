@@ -1404,7 +1404,6 @@ export type ClientCardSummaryDto = IClientCardSummaryDto;
 
 // ======= MERCADO PAGO SUBSCRIPTIONS =======
 
-// Estados de intents de suscripción
 export enum MpSubscriptionIntentStatus {
   INITIATED = 'initiated',
   CREATED_IN_MP = 'created_in_mp',
@@ -1413,52 +1412,63 @@ export enum MpSubscriptionIntentStatus {
   CANCELLED = 'cancelled',
 }
 
-// Estados de preapproval en MP
 export enum MpPreapprovalStatus {
   PENDING = 'pending',
   AUTHORIZED = 'authorized',
+  ACTIVE = 'active',
   PAUSED = 'paused',
   CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
 }
 
-// Estados de planes en MP
 export enum MpPreapprovalPlanStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
 }
 
-// Tipos de webhook de MP
 export enum MpWebhookTopic {
   SUBSCRIPTION_PREAPPROVAL = 'subscription_preapproval',
   SUBSCRIPTION_AUTHORIZED_PAYMENT = 'subscription_authorized_payment',
   SUBSCRIPTION_PREAPPROVAL_PLAN = 'subscription_preapproval_plan',
 }
 
-// ======= INTERFACES PARA MERCADO PAGO =======
+// ======= ENTIDADES/MAPPINGS =======
 
 export interface IMpSubscriptionPlanMapping {
   id: number;
   planId: number;
   mpPreapprovalPlanId: string;
-  status: string;
+  initPoint: string;
+  backUrl: string;
+  currencyId: string; // 'ARS'
+  frequency: number; // 1
+  frequencyType: 'days' | 'months';
+  transactionAmount: number; // 1000.00
+  collectorId: number;
+  status: string; // 'active' | 'inactive'
   raw: any;
   createdAt: Date;
   updatedAt: Date;
-  plan?: ISubscriptionPlan;
+  plan?: ISubscriptionPlan; // tu interfaz existente
 }
 
 export interface IMpBusinessSubscriptionMapping {
   id: number;
   businessSubscriptionId?: number;
   mpPreapprovalId: string;
-  status: string;
+  mpPreapprovalPlanId: string;
+  status: string; // 'pending' | 'authorized' | 'active' | 'paused' | 'cancelled' ...
+  statusDetail?: string;
   payerEmail: string;
   externalReference?: string;
   nextPaymentDate?: Date;
+  pausedAt?: Date;
+  cancelledAt?: Date;
+  lastWebhookAt?: Date;
   raw: any;
   createdAt: Date;
   updatedAt: Date;
-  businessSubscription?: IBusinessSubscription;
+  businessSubscription?: IBusinessSubscription; // tu interfaz existente
 }
 
 export interface IMpSubscriptionIntent {
@@ -1470,42 +1480,73 @@ export interface IMpSubscriptionIntent {
   mpPreapprovalId?: string;
   status: MpSubscriptionIntentStatus;
   idempotencyKey: string;
+  externalReference?: string;
+  attempts: number;
+  lastError?: string;
   payload: any;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ======= DTOs PARA MERCADO PAGO =======
+// ======= DTOs REQUEST =======
 
 export interface ICreateMpIntentDto {
   businessId: number;
   planId: number;
-  payerEmail: string;
+  source: 'plan_redirect' | 'direct_card';
+  /** requerido solo si source === 'direct_card' (el DTO de clase valida con @ValidateIf) */
+  payerEmail?: string;
   promotionalCodeId?: number;
   externalReference?: string;
+  /** requerido solo si source === 'direct_card' */
   cardToken?: string;
+  idempotencyKey?: string;
+  returnUrl?: string;
 }
 
 export interface IUpdateMpPreapprovalDto {
-  status?: 'paused' | 'authorized' | 'cancelled';
+  status?: 'paused' | 'authorized' | 'cancelled' | 'resume';
   cardToken?: string;
-  billingDay?: number;
+  billingDay?: number; // 1..28
+  reason?: string;
 }
 
+export interface ILinkPreapprovalDto {
+  /** tu intent interno para resolver idempotencia y vínculos */
+  intentId: number;
+  /** preapproval_id que devuelve MP */
+  mpPreapprovalId: string;
+  /** tu external reference (opcional) para conciliar */
+  externalReference?: string;
+}
+
+// Raw webhook (tal cual lo envía MP). Útil para guardar/auditar sin transformar.
 export interface IMpWebhookEvent {
   id?: string;
   live_mode: boolean;
-  type: string;
+  type: string; // puede venir como "payment" en viejas versiones o el topic textual
   date_created: string;
   application_id: string;
   user_id: string;
   version: string;
   api_version: string;
   action: string;
-  data: {
-    id: string;
-  };
+  data: { id: string };
 }
+
+// Webhook normalizado que usa tu controller/servicio internamente
+export interface IMpWebhookDto {
+  /** resource id: puede venir como body.id o body.data.id según el topic */
+  id: string;
+  /** topic esperado: subscription_preapproval | subscription_authorized_payment | subscription_preapproval_plan */
+  topic?: string;
+  action?: string;
+  live_mode?: boolean;
+  /** payload “tal cual vino”, por si querés guardarlo */
+  data?: Record<string, any>;
+}
+
+// ======= DTOs/REQUEST para crear plan y preapproval (si usás API directa) =======
 
 export interface IMpPreapprovalPlanRequest {
   reason: string;
@@ -1516,14 +1557,10 @@ export interface IMpPreapprovalPlanRequest {
     currency_id: string;
   };
   payment_methods_allowed?: {
-    payment_types?: Array<{
-      id: string;
-    }>;
-    payment_methods?: Array<{
-      id: string;
-    }>;
+    payment_types?: Array<{ id: string }>;
+    payment_methods?: Array<{ id: string }>;
   };
-  back_url: string; // Requerido por MP
+  back_url: string; // requerido por MP
   free_trial?: {
     frequency: number;
     frequency_type: 'days' | 'months';
@@ -1534,7 +1571,7 @@ export interface IMpPreapprovalRequest {
   preapproval_plan_id: string;
   reason: string;
   payer_email: string;
-  card_token_id?: string;
+  card_token_id?: string; // solo si vas por direct card
   auto_recurring?: {
     frequency: number;
     frequency_type: 'days' | 'months';
@@ -1545,10 +1582,10 @@ export interface IMpPreapprovalRequest {
   };
   back_url?: string;
   external_reference?: string;
-  status?: string;
+  status?: string; // 'authorized'|'paused'...
 }
 
-// ======= RESPONSES DE MERCADO PAGO =======
+// ======= RESPONSES =======
 
 export interface IMpCreateIntentResponse {
   intentId: number;
