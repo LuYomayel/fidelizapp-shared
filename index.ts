@@ -235,7 +235,7 @@ export interface IBusiness {
   emailVerificationCode?: string; // Código de verificación de email
   emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
   mustChangePassword?: boolean; // Si debe cambiar la contraseña
-  status?: 'draft' | 'active' | 'disabled';
+  status?: BusinessStatus;
   preRegistrationToken?: string;
   registrationStep: number;
   createdAt?: Date;
@@ -248,6 +248,12 @@ export interface IBusiness {
   // Información de suscripción
   subscriptionPlanId?: number;
   currentSubscription?: IBusinessSubscription;
+}
+
+export enum BusinessStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  DISABLED = 'disabled',
 }
 
 export interface IClient {
@@ -1493,18 +1499,27 @@ export interface IMpSubscriptionIntent {
 
 // ======= DTOs REQUEST =======
 
+// @shared
 export interface ICreateMpIntentDto {
   businessId: number;
   planId: number;
   source: 'plan_redirect' | 'direct_card';
-  /** requerido solo si source === 'direct_card' (el DTO de clase valida con @ValidateIf) */
+  /** Validación condicional:
+   *  - plan_redirect: opcional
+   *  - direct_card: requerido
+   */
   payerEmail?: string;
   promotionalCodeId?: number;
+  /** Si no viene, el backend la genera */
   externalReference?: string;
-  /** requerido solo si source === 'direct_card' */
+  /** Solo para direct_card */
   cardToken?: string;
+  /** Opcional (el backend puede generar la suya) */
   idempotencyKey?: string;
+  /** En plan_redirect no se usa (lo maneja el back_url del plan). Mantener para futuro si migra a direct card con redirect propio */
   returnUrl?: string;
+  /** Token de pre-registro para validar el draft del negocio */
+  preToken?: string;
 }
 
 export interface IUpdateMpPreapprovalDto {
@@ -1589,13 +1604,24 @@ export interface IMpPreapprovalRequest {
 }
 
 // ======= RESPONSES =======
-
+/*
 export interface IMpCreateIntentResponse {
   intentId: number;
   mpPreapprovalId: string;
   status: MpSubscriptionIntentStatus;
   idempotencyKey: string;
   checkoutUrl: string;
+}
+*/
+
+// Reemplaza IMpCreateIntentResponse
+export interface IMpCreateIntentResponse {
+  intentId: number;
+  status: MpSubscriptionIntentStatus;
+  idempotencyKey: string;
+  checkoutUrl: string;
+  mpPreapprovalPlanId: string; // ← correcto
+  externalReference: string; // ← devolvelo para conciliar
 }
 
 export interface IMpPlanMappingResponse {
