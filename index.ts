@@ -237,6 +237,7 @@ export interface IBusiness {
   mustChangePassword?: boolean; // Si debe cambiar la contraseña
   status?: 'draft' | 'active' | 'disabled';
   preRegistrationToken?: string;
+  registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
   active?: boolean;
