@@ -235,6 +235,8 @@ export interface IBusiness {
   emailVerificationCode?: string; // Código de verificación de email
   emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
   mustChangePassword?: boolean; // Si debe cambiar la contraseña
+  status?: 'draft' | 'active' | 'disabled';
+  preRegistrationToken?: string;
   createdAt?: Date;
   updatedAt?: Date;
   active?: boolean;
