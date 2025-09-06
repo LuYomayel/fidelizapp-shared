@@ -224,6 +224,7 @@ export interface IBusiness {
   neighborhood?: string;
   postalCode?: string;
   province?: string;
+  country?: string;
   logoPath?: string;
   type: BusinessType;
   customType?: string;
@@ -816,10 +817,11 @@ export interface ICreateBusinessDto {
   internalPhone?: string;
   externalPhone?: string;
   size: BusinessSize;
-  street?: string;
-  neighborhood?: string;
-  postalCode?: string;
-  province?: string;
+  street: string;
+  neighborhood: string;
+  postalCode: string;
+  province: string;
+  country: string;
   type: BusinessType;
   customType?: string;
   instagram?: string;
@@ -828,26 +830,7 @@ export interface ICreateBusinessDto {
   logo?: File;
 }
 
-export interface IUpdateBusinessDto {
-  businessName?: string;
-  email?: string;
-  password?: string;
-  adminFirstName?: string; // Nombre del administrador del negocio
-  adminLastName?: string; // Apellido del administrador del negocio
-  internalPhone?: string;
-  externalPhone?: string;
-  size?: BusinessSize;
-  street?: string;
-  neighborhood?: string;
-  postalCode?: string;
-  province?: string;
-  type?: BusinessType;
-  customType?: string;
-  instagram?: string;
-  tiktok?: string;
-  website?: string;
-  logo?: File;
-}
+export type IUpdateBusinessDto = Partial<ICreateBusinessDto>;
 
 export interface ILoginBusinessDto {
   email: string;
