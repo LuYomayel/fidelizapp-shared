@@ -338,9 +338,10 @@ export interface ISubscriptionPlan {
   name: string;
   description: string;
   tier: SubscriptionTier;
-  price: number; // Precio en centavos
-  currency: ISubscriptionPlanCurrency; // 'ARS', 'USD', etc.
-  billingPeriod: 'monthly' | 'yearly';
+  priceARS: number;
+  priceUSD: number;
+  priceUYU: number;
+  billingPeriod: 'days' | 'months' | 'years';
   features: string[]; // Lista de características incluidas
   maxClients?: number; // Límite de clientes (null = ilimitado)
   maxStamps?: number; // Límite de sellos por mes (null = ilimitado)
@@ -404,9 +405,10 @@ export interface ICreateSubscriptionPlanDto {
   name: string;
   description: string;
   tier: SubscriptionTier;
-  price: number;
-  currency: ISubscriptionPlanCurrency;
-  billingPeriod: 'monthly' | 'yearly';
+  priceARS: number;
+  priceUSD: number;
+  priceUYU: number;
+  billingPeriod: 'days' | 'months' | 'years';
   features: string[];
   maxClients?: number;
   maxStamps?: number;
@@ -1571,7 +1573,7 @@ export interface IMpPreapprovalPlanRequest {
   reason: string;
   auto_recurring: {
     frequency: number;
-    frequency_type: 'days' | 'months';
+    frequency_type: 'days' | 'months' | 'years';
     transaction_amount: number;
     currency_id: string;
   };
