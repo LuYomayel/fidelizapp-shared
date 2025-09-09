@@ -424,6 +424,14 @@ export interface IUpdateSubscriptionPlanDto
   isActive?: boolean;
 }
 
+export interface IUpdateBusinessSubscriptionDto {
+  status?: SubscriptionStatus;
+  endDate?: Date;
+  promotionalCodeId?: number;
+  paymentId?: string;
+  autoRenew?: boolean;
+}
+
 export interface ICreatePromotionalCodeDto {
   code: string;
   type: PromoCodeType;
@@ -1455,7 +1463,11 @@ export interface IMpSubscriptionPlanMapping {
   backUrl: string;
   currencyId: string; // 'ARS'
   frequency: number; // 1
+<<<<<<< HEAD
   frequencyType: "days" | "months";
+=======
+  frequencyType: 'days' | 'months' | 'years';
+>>>>>>> 659a92e (update business sub dto)
   transactionAmount: number; // 1000.00
   collectorId: number;
   status: string; // 'active' | 'inactive'
@@ -1524,6 +1536,25 @@ export interface ICreateMpIntentDto {
   returnUrl?: string;
   /** Token de pre-registro para validar el draft del negocio */
   preToken?: string;
+}
+
+export interface ICreatePaymentPreferenceDto {
+  planId: number; // ID del plan de suscripción
+  currency: string; // "ARS", "UYU", "USD"
+  businessId: number; // ID del negocio
+  payerEmail: string; // Email del pagador
+  promotionalCodeId?: number; // ID del código promocional (opcional)
+  preToken?: string; // Token de pre-registro (opcional)
+}
+
+export interface IProcessPaymentDto {
+  cardToken: string; // Token de la tarjeta del Payment Brick
+  planId: number; // ID del plan de suscripción
+  businessId: number; // ID del negocio
+  payerEmail: string; // Email del pagador
+  mpPreapprovalPlanId: string; // ID del plan de preapproval en MP
+  promotionalCodeId?: number; // ID del código promocional (opcional)
+  preToken?: string; // Token de pre-registro (opcional)
 }
 
 export interface IUpdateMpPreapprovalDto {
@@ -1642,4 +1673,22 @@ export interface IMpPreapprovalSyncResponse {
   nextPaymentDate?: Date;
   raw: any;
   updated: boolean;
+}
+
+export interface IMpPaymentPreferenceResponse {
+  preferenceId: string; // ID de la preference de MP
+  mpPreapprovalPlanId: string; // ID del plan de preapproval en MP
+  amount: number; // Monto a cobrar
+  currency: string; // Moneda del pago
+  planName: string; // Nombre del plan (para UI)
+  billingPeriod: string; // Período de facturación
+}
+
+export interface IProcessPaymentResponse {
+  preapprovalId: string; // ID de la suscripción en MP
+  status: string; // Estado del pago
+  paymentId?: string; // ID del pago (si aplica)
+  externalReference: string; // Referencia externa
+  nextPaymentDate?: string; // Próxima fecha de pago
+  mpPreapprovalPlanId: string; // ID del plan en MP
 }
