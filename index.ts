@@ -399,6 +399,7 @@ export interface IBusinessSubscription {
   plan?: ISubscriptionPlan;
   business?: IBusiness;
   promotionalCode?: IPromotionalCode;
+  mpMapping?: IMpBusinessSubscriptionMapping
 }
 
 // DTOs para crear/actualizar
@@ -1171,6 +1172,7 @@ export interface IBusinessProfile {
   neighborhood?: string;
   postalCode?: string;
   province?: string;
+  country?: IBusinessCountry;
   logoPath?: string;
   logoUrl?: string;
   type: BusinessType;
@@ -1184,6 +1186,7 @@ export interface IBusinessProfile {
   mustChangePassword: boolean;
   createdAt: Date;
   updatedAt: Date;
+  subscription: IBusinessSubscription
 }
 
 export interface IClientProfile {
