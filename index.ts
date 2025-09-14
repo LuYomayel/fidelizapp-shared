@@ -1577,11 +1577,10 @@ export interface IMpWebhookEvent {
   id?: string;
   live_mode: boolean;
   type: string; // puede venir como "payment" en viejas versiones o el topic textual
-  date_created: string;
+  date: string;
   application_id: string;
   user_id: string;
   version: string;
-  api_version: string;
   action: string;
   data: { id: string };
 }
