@@ -426,7 +426,7 @@ export interface IUpdateSubscriptionPlanDto
 
 export interface IUpdateBusinessSubscriptionDto {
   status?: SubscriptionStatus;
-  endDate?: Date;
+  endDate?: Date | null;
   promotionalCodeId?: number;
   paymentId?: string;
   autoRenew?: boolean;
@@ -1425,14 +1425,6 @@ export type ClientCardSummaryDto = IClientCardSummaryDto;
 
 // ======= MERCADO PAGO SUBSCRIPTIONS =======
 
-export enum MpSubscriptionIntentStatus {
-  INITIATED = 'initiated',
-  CREATED_IN_MP = 'created_in_mp',
-  CONFIRMED = 'confirmed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-}
-
 export enum MpPreapprovalStatus {
   PENDING = 'pending',
   AUTHORIZED = 'authorized',
@@ -1499,7 +1491,7 @@ export interface IMpSubscriptionIntent {
   promotionalCodeId?: number;
   mpPreapprovalPlanId?: string;
   mpPreapprovalId?: string;
-  status: MpSubscriptionIntentStatus;
+  status: SubscriptionStatus;
   idempotencyKey: string;
   externalReference?: string;
   attempts: number;
@@ -1532,6 +1524,11 @@ export interface ICreateMpIntentDto {
   returnUrl?: string;
   /** Token de pre-registro para validar el draft del negocio */
   preToken?: string;
+}
+
+export interface IUpdateMpIntentDto {
+  businessId: number;
+  status: SubscriptionStatus;
 }
 
 export interface ICreatePaymentPreferenceDto {
@@ -1604,16 +1601,16 @@ export interface IMpPreapprovalPlanRequest {
     frequency_type: 'days' | 'months' | 'years';
     transaction_amount: number;
     currency_id: string;
+    free_trial?: {
+      frequency: number;
+      frequency_type: 'days' | 'months';
+    };
   };
   payment_methods_allowed?: {
     payment_types?: Array<{ id: string }>;
     payment_methods?: Array<{ id: string }>;
   };
   back_url: string; // requerido por MP
-  free_trial?: {
-    frequency: number;
-    frequency_type: 'days' | 'months';
-  };
 }
 
 export interface IMpPreapprovalRequest {
@@ -1648,7 +1645,7 @@ export interface IMpCreateIntentResponse {
 // Reemplaza IMpCreateIntentResponse
 export interface IMpCreateIntentResponse {
   intentId: number;
-  status: MpSubscriptionIntentStatus;
+  status: SubscriptionStatus;
   idempotencyKey: string;
   checkoutUrl: string;
   mpPreapprovalPlanId: string; // ← correcto
