@@ -588,6 +588,7 @@ export interface IReward {
   active: boolean;
   expirationDate?: Date;
   stock?: number; // Stock disponible (-1 = ilimitado)
+  oneTimeUse: boolean;
   specialConditions?: string;
   createdAt: Date;
   updatedAt: Date;
