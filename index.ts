@@ -399,7 +399,7 @@ export interface IBusinessSubscription {
   plan?: ISubscriptionPlan;
   business?: IBusiness;
   promotionalCode?: IPromotionalCode;
-  mpMapping?: IMpBusinessSubscriptionMapping
+  mpMapping?: IMpBusinessSubscriptionMapping;
 }
 
 // DTOs para crear/actualizar
@@ -1186,7 +1186,7 @@ export interface IBusinessProfile {
   mustChangePassword: boolean;
   createdAt: Date;
   updatedAt: Date;
-  subscription: IBusinessSubscription
+  subscription: IBusinessSubscription;
 }
 
 export interface IClientProfile {
@@ -1574,7 +1574,7 @@ export interface IMpWebhookEvent {
   id?: string;
   live_mode: boolean;
   type: string; // puede venir como "payment" en viejas versiones o el topic textual
-  date: string;
+  date_created: string;
   application_id: string;
   user_id: string;
   version: string;
