@@ -249,8 +249,6 @@ export interface IBusiness {
   instagram?: string;
   tiktok?: string;
   website?: string;
-  stampsForReward?: number; // Cantidad de sellos para recompensa
-  rewardDescription?: string; // Descripción de la recompensa
   emailVerified?: boolean; // Si el email ha sido verificado
   emailVerificationCode?: string; // Código de verificación de email
   emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
@@ -260,10 +258,8 @@ export interface IBusiness {
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
-  active?: boolean;
-  suspendedAt?: Date | null;
-  suspendedReason?: string;
-  suspended?: string | null; // Para respuestas de login
+  suspendedAt: Date | null;
+  suspendedReason: string | null;
 
   // Información de suscripción
   subscriptionPlanId?: number;
@@ -285,14 +281,12 @@ export interface IClient {
   googleId?: string;
   profilePicture?: string;
   provider: UserProvider;
-  isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   emailVerified: boolean;
   mustChangePassword: boolean;
-  suspendedAt?: Date | null;
-  suspendedReason?: string;
-  suspended?: string | null; // Para respuestas de login
+  suspendedReason: string | null;
+  suspendedAt: Date | null;
 }
 
 // ======= INTERFACES PARA SISTEMA DE SUSCRIPCIONES =======
@@ -1188,8 +1182,6 @@ export interface IBusinessProfile {
   instagram?: string;
   tiktok?: string;
   website?: string;
-  stampsForReward: number;
-  rewardDescription?: string;
   emailVerified: boolean;
   mustChangePassword: boolean;
   createdAt: Date;
@@ -1206,7 +1198,6 @@ export interface IClientProfile {
   profilePictureUrl?: string;
   provider: UserProvider;
   emailVerified: boolean;
-  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   // Estadísticas del cliente
@@ -1237,20 +1228,7 @@ export interface IClientProfile {
     }>;
   };
   // Tarjetas de cliente por negocio
-  clientCards?: Array<{
-    id: number;
-    businessId: number;
-    businessName: string;
-    businessLogo?: string;
-    businessType: string;
-    totalStamps: number;
-    availableStamps: number;
-    usedStamps: number;
-    level: number;
-    lastStampDate?: Date;
-    stampsForReward: number;
-    rewardDescription?: string;
-  }>;
+  clientCards?: IClientCard[];
   // Recompensas canjeadas recientemente
   recentRewards?: Array<{
     id: number;
