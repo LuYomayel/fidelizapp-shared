@@ -703,110 +703,114 @@ export interface IDashboard {
 }
 
 // ======= INTERFAZ PARA ESTADÍSTICAS COMPLETAS =======
-export interface IStatistics {
-  // Métricas principales
-  stampsIssued: {
-    total: number; // Sellos del mes actual
-    totalHistoric: number; // Total histórico de sellos desde el inicio
-    currentMonth: number;
-    previousMonth: number;
-    growth: number; // Porcentaje de crecimiento
-  };
-
-  activeClients: {
-    total: number;
-    currentMonth: number;
-    previousMonth: number;
-    growth: number;
-  };
-
-  rewardsRedeemed: {
-    total: number; // Recompensas del mes actual
-    totalHistoric: number; // Total histórico de recompensas desde el inicio
-    currentMonth: number;
-    previousMonth: number;
-    growth: number;
-  };
-
-  clientRetention: {
-    rate: number; // Porcentaje de retención
-    currentPeriod: number; // Retención período actual
-    previousPeriod: number; // Retención período anterior
-    growth: number; // Cambio en retención
-  };
-
-  // Métricas avanzadas
-  visitFrequency: {
-    averageDaysBetweenStamps: number; // Promedio de días entre sellos obtenidos
-    medianDaysBetweenStamps: number; // Mediana de días entre sellos obtenidos
-    trailing90dAvg: number; // Promedio de días entre sellos obtenidos en los últimos 90 días
-    trailing90dMedian: number; // Mediana de días entre sellos obtenidos en los últimos 90 días
-    growth90d: number; // Cambio porcentual de días entre sellos obtenidos en los últimos 90 días
-    averageStampsPerClient: number;
-    averageVisitsPerMonth: number;
-    mostActiveClients: Array<{
-      clientId: number;
-      clientName: string;
-      totalStamps: number;
-      lastVisit: Date;
-    }>;
-  };
-
-  completionTime: {
-    averageDaysToComplete: number; // Días promedio desde primer sello hasta primera recompensa en el mes
-    medianDaysToComplete: number; // Mediana de días desde primer sello hasta primera recompensa en el mes
-    trailing180dAvg: number; // Promedio de días desde primer sello hasta primera recompensa en los últimos 180 días
-    prev180dAvg: number; // Promedio de días desde primer sello hasta primera recompensa en los últimos 180 días
-    growth180d: number; // Cambio porcentual de días desde primer sello hasta primera recompensa en los últimos 180 días
-    fastestCompletion: number;
-    slowestCompletion: number;
-    completionDistribution: Array<{
-      daysRange: string;
-      clientCount: number;
-    }>;
-  };
-
-  conversionRate: {
-    clientsWhoRedeem: number; // % de clientes con sellos que canjearon recompensas en el mes
-    currentMonth: number; // Tasa del mes actual
-    previousMonth: number; // Tasa del mes anterior
-    growth: number; // Cambio porcentual
-    stampsToRewards: number; // % de sellos que se convierten en recompensas
-    averageStampsBeforeRedemption: number;
-  };
-
-  // Datos adicionales para insights
-  periodComparison: {
-    period: 'month' | 'quarter' | 'year';
-    current: Date;
-    previous: Date;
-  };
-
-  recentActivity: {
-    newClients: Array<{
-      clientId: number;
-      clientName: string;
-      email: string;
-      joinedAt: Date;
-      totalStamps: number;
-      availableStamps: number;
-    }>;
-    recentRedemptions: Array<{
-      clientName: string;
-      rewardName: string;
-      redeemedAt: Date;
-      stampsSpent: number;
-    }>;
-  };
+export enum MetricKey {
+  STAMPS_ISSUED = 'stampsIssued',
+  ACTIVE_CLIENTS = 'activeClients',
+  REWARDS_REDEEMED = 'rewardsRedeemed',
+  CLIENT_RETENTION = 'clientRetention',
+  VISIT_FREQUENCY = 'visitFrequency',
+  COMPLETION_TIME = 'completionTime',
+  CONVERSION_RATE = 'conversionRate',
+  RECENT_ACTIVITY = 'recentActivity',
 }
 
-import {
-  MetricsSelection as MetricsSelectionType,
-  MetricKey as MetricKeyType,
-} from '../src/statistics/types';
+export type MetricsSelection = MetricKey[] | 'all';
 
-export type MetricsSelection = MetricsSelectionType;
-export type MetricKey = MetricKeyType;
+export type StampsIssuedResult = {
+  total: number;
+  totalHistoric: number;
+  currentMonth: number;
+  previousMonth: number;
+  growth: number;
+};
+
+export type ActiveClientsResult = {
+  total: number;
+  currentMonth: number;
+  previousMonth: number;
+  growth: number;
+};
+
+export type RewardsRedeemedResult = {
+  total: number;
+  totalHistoric: number;
+  currentMonth: number;
+  previousMonth: number;
+  growth: number;
+};
+
+export type ClientRetentionResult = {
+  rate: number;
+  currentPeriod: number;
+  previousPeriod: number;
+  growth: number;
+};
+
+export type VisitFrequencyResult = {
+  averageDaysBetweenStamps: number;
+  medianDaysBetweenStamps: number;
+  trailing90dAvg: number;
+  trailing90dMedian: number;
+  growth90d: number;
+  averageStampsPerClient: number;
+  averageVisitsPerMonth: number;
+  mostActiveClients: {
+    clientId: number;
+    clientName: string;
+    totalStamps: number;
+    lastVisit: Date;
+  }[];
+};
+
+export type CompletionTimeResult = {
+  averageDaysToComplete: number;
+  medianDaysToComplete: number;
+  trailing180dAvg: number;
+  prev180dAvg: number;
+  growth180d: number;
+  fastestCompletion: number;
+  slowestCompletion: number;
+  completionDistribution: { daysRange: string; clientCount: number }[];
+};
+
+export type ConversionRateResult = {
+  clientsWhoRedeem: number;
+  currentMonth: number;
+  previousMonth: number;
+  growth: number;
+  stampsToRewards: number;
+  averageStampsBeforeRedemption: number;
+};
+
+export type RecentActivityResult = {
+  newClients: {
+    clientId: number;
+    clientName: string;
+    email: string;
+    joinedAt: Date;
+    totalStamps: number;
+    availableStamps: number;
+  }[];
+  recentRedemptions: {
+    clientName: string;
+    rewardName: string;
+    redeemedAt: Date;
+    stampsSpent: number;
+  }[];
+};
+
+export type StatsResultMap = {
+  [MetricKey.STAMPS_ISSUED]: StampsIssuedResult;
+  [MetricKey.ACTIVE_CLIENTS]: ActiveClientsResult;
+  [MetricKey.REWARDS_REDEEMED]: RewardsRedeemedResult;
+  [MetricKey.CLIENT_RETENTION]: ClientRetentionResult;
+  [MetricKey.VISIT_FREQUENCY]: VisitFrequencyResult;
+  [MetricKey.COMPLETION_TIME]: CompletionTimeResult;
+  [MetricKey.CONVERSION_RATE]: ConversionRateResult;
+  [MetricKey.RECENT_ACTIVITY]: RecentActivityResult;
+};
+
+export type StatsPartial = Partial<StatsResultMap>;
 
 export interface Admin {
   id: string;
