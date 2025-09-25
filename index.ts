@@ -800,6 +800,14 @@ export interface IStatistics {
   };
 }
 
+import {
+  MetricsSelection as MetricsSelectionType,
+  MetricKey as MetricKeyType,
+} from '../src/statistics/types';
+
+export type MetricsSelection = MetricsSelectionType;
+export type MetricKey = MetricKeyType;
+
 export interface Admin {
   id: string;
   name: string;
