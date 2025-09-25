@@ -191,6 +191,7 @@ export interface BusinessJwtPayload extends BaseJwtPayload {
   email: string;
   provider: 'email' | 'google';
   emailVerified: boolean;
+  subscriptionTier: SubscriptionTier;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
@@ -790,12 +791,6 @@ export type RecentActivityResult = {
     joinedAt: Date;
     totalStamps: number;
     availableStamps: number;
-  }[];
-  recentRedemptions: {
-    clientName: string;
-    rewardName: string;
-    redeemedAt: Date;
-    stampsSpent: number;
   }[];
 };
 
