@@ -3,51 +3,51 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = '1-5 sucursales',
-  MEDIUM = '5-10 sucursales',
-  LARGE = '+10 sucursales',
+  SMALL = "1-5 sucursales",
+  MEDIUM = "5-10 sucursales",
+  LARGE = "+10 sucursales",
 }
 
 export enum BusinessType {
-  CAFETERIA = 'Cafeteria',
-  RESTAURANT = 'Restaurant',
-  PELUQUERIA = 'Peluqueria',
-  MANICURA = 'Manicura',
-  VINERIA = 'Vineria',
-  BAR = 'Bar',
-  LAVADERO_DE_AUTOS = 'Lavadero de autos',
-  OTRO = 'Otro',
+  CAFETERIA = "Cafeteria",
+  RESTAURANT = "Restaurant",
+  PELUQUERIA = "Peluqueria",
+  MANICURA = "Manicura",
+  VINERIA = "Vineria",
+  BAR = "Bar",
+  LAVADERO_DE_AUTOS = "Lavadero de autos",
+  OTRO = "Otro",
 }
 
 export enum TransactionType {
-  ACUMULATION = 'acumulacion',
-  EXCHANGE = 'canje',
-  REWARD = 'bonificacion',
-  PENALTY = 'penalizacion',
+  ACUMULATION = "acumulacion",
+  EXCHANGE = "canje",
+  REWARD = "bonificacion",
+  PENALTY = "penalizacion",
 }
 
 export enum AdminRole {
-  OWNER = 'propietario',
-  EMPLOYEE = 'empleado',
+  OWNER = "propietario",
+  EMPLOYEE = "empleado",
 }
 
 export enum UserProvider {
-  EMAIL = 'email',
-  GOOGLE = 'google',
+  EMAIL = "email",
+  GOOGLE = "google",
 }
 
 export const BUSINESS_COUNTRIES = {
-  ARGENTINA: 'argentina',
-  URUGUAY: 'uruguay',
+  ARGENTINA: "argentina",
+  URUGUAY: "uruguay",
 } as const;
 
 export type IBusinessCountry =
   (typeof BUSINESS_COUNTRIES)[keyof typeof BUSINESS_COUNTRIES];
 
 export const SUBSCRIPTION_PLAN_CURRENCIES = {
-  ARS: 'ARS',
-  USD: 'USD',
-  UYU: 'UYU',
+  ARS: "ARS",
+  USD: "USD",
+  UYU: "UYU",
 } as const;
 
 export type ISubscriptionPlanCurrency =
@@ -55,46 +55,46 @@ export type ISubscriptionPlanCurrency =
 
 // ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
 export enum StampType {
-  PURCHASE = 'compra',
-  VISIT = 'visita',
-  REFERRAL = 'referencia',
-  BONUS = 'bonus',
-  SPECIAL = 'especial',
+  PURCHASE = "compra",
+  VISIT = "visita",
+  REFERRAL = "referencia",
+  BONUS = "bonus",
+  SPECIAL = "especial",
 }
 
 export enum StampStatus {
-  ACTIVE = 'activo',
-  USED = 'usado',
-  EXPIRED = 'expirado',
-  CANCELLED = 'cancelado',
+  ACTIVE = "activo",
+  USED = "usado",
+  EXPIRED = "expirado",
+  CANCELLED = "cancelado",
 }
 
 export enum PurchaseType {
-  SMALL = 'pequeña',
-  MEDIUM = 'mediana',
-  LARGE = 'grande',
-  SPECIAL = 'especial',
+  SMALL = "pequeña",
+  MEDIUM = "mediana",
+  LARGE = "grande",
+  SPECIAL = "especial",
 }
 
 // ======= ENUMS PARA SISTEMA DE RECOMPENSAS =======
 export enum RedemptionStatus {
-  PENDING = 'pending',
-  DELIVERED = 'delivered',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  DELIVERED = "delivered",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 export enum RewardType {
-  FREE_PRODUCT = 'producto_gratis',
-  DISCOUNT = 'descuento',
-  OTHER = 'otro',
+  FREE_PRODUCT = "producto_gratis",
+  DISCOUNT = "descuento",
+  OTHER = "otro",
 }
 
 // ======= ENUMS/DTOS PARA ANUNCIOS =======
 export enum AnnouncementType {
-  NEWS = 'NEWS',
-  EVENT = 'EVENT',
-  PROMOTION = 'PROMOTION',
+  NEWS = "NEWS",
+  EVENT = "EVENT",
+  PROMOTION = "PROMOTION",
 }
 
 export interface IAnnouncement {
@@ -138,34 +138,34 @@ export interface IUpdateAnnouncementDto
 export interface BaseUser {
   userId: number;
   username: string;
-  type: 'client' | 'business' | 'platform';
+  type: "client" | "business" | "platform";
 }
 
 export interface ClientUser extends BaseUser {
-  type: 'client';
+  type: "client";
   clientId: number;
 
   email: string;
   emailVerified: boolean;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   firstName?: string;
   lastName?: string;
   picture?: string;
 }
 
 export interface BusinessUser extends BaseUser {
-  type: 'business';
+  type: "business";
   businessId: number;
   email: string;
   emailVerified: boolean;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   picture?: string;
 }
 
 export interface PlatformAdminUser extends BaseUser {
-  type: 'platform';
+  type: "platform";
   email: string;
-  role: 'superadmin' | 'admin';
+  role: "superadmin" | "admin";
 }
 
 // Union type para req.user
@@ -175,29 +175,29 @@ export type AuthenticatedUser = ClientUser | BusinessUser | PlatformAdminUser;
 export interface BaseJwtPayload {
   username: string;
   sub: number;
-  type: 'client' | 'business' | 'platform';
+  type: "client" | "business" | "platform";
   suspended: string | null;
 }
 
 export interface ClientJwtPayload extends BaseJwtPayload {
-  type: 'client';
+  type: "client";
   email: string;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   emailVerified: boolean;
 }
 
 export interface BusinessJwtPayload extends BaseJwtPayload {
-  type: 'business';
+  type: "business";
   email: string;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   emailVerified: boolean;
   subscriptionTier: SubscriptionTier;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
-  type: 'platform';
+  type: "platform";
   email: string;
-  role: 'superadmin' | 'admin';
+  role: "superadmin" | "admin";
 }
 
 export type JwtPayload =
@@ -207,11 +207,11 @@ export type JwtPayload =
 
 // Type guards para verificar el tipo de usuario
 export function isClientUser(user: AuthenticatedUser): user is ClientUser {
-  return user.type === 'client';
+  return user.type === "client";
 }
 
 export function isBusinessUser(user: AuthenticatedUser): user is BusinessUser {
-  return user.type === 'business';
+  return user.type === "business";
 }
 
 // Interfaces para request con usuario autenticado
@@ -264,12 +264,15 @@ export interface IBusiness {
   // Información de suscripción
   subscriptionPlanId?: number;
   currentSubscription?: IBusinessSubscription;
+
+  emoji: string;
+  cardTheme?: string; // Tema de la tarjeta de fidelidad
 }
 
 export enum BusinessStatus {
-  DRAFT = 'draft',
-  ACTIVE = 'active',
-  DISABLED = 'disabled',
+  DRAFT = "draft",
+  ACTIVE = "active",
+  DISABLED = "disabled",
 }
 
 export interface IClient {
@@ -296,36 +299,36 @@ export type SubscriptionTier = string;
 
 // Tiers predefinidos comunes (puedes crear más según necesites)
 export const SUBSCRIPTION_TIERS = {
-  BETA: 'beta', // Plan beta/conejillo de indias (oculto, activado por código)
-  FREE: 'free', // Plan gratuito
-  BASIC: 'basic', // Plan básico
-  STANDARD: 'standard', // Plan estándar
-  PREMIUM: 'premium', // Plan premium
-  ENTERPRISE: 'enterprise', // Plan empresarial
+  BETA: "beta", // Plan beta/conejillo de indias (oculto, activado por código)
+  FREE: "free", // Plan gratuito
+  BASIC: "basic", // Plan básico
+  STANDARD: "standard", // Plan estándar
+  PREMIUM: "premium", // Plan premium
+  ENTERPRISE: "enterprise", // Plan empresarial
 } as const;
 
 export enum SubscriptionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 // ======= ENUMS PARA CÓDIGOS PROMOCIONALES =======
 export enum PromoCodeType {
-  UNLOCK_PLAN = 'unlock_plan', // Desbloquea un plan específico (ej: tier beta)
-  DISCOUNT_PERCENTAGE = 'discount_percentage', // Descuento porcentual (ej: 20% off)
-  DISCOUNT_FIXED = 'discount_fixed', // Descuento fijo (ej: $500 off)
-  FREE_TRIAL = 'free_trial', // Período de prueba gratis extendido
-  FREE_MONTHS = 'free_months', // Meses gratis (ej: primer mes gratis)
-  UPGRADE_PLAN = 'upgrade_plan', // Upgrade gratuito a plan superior por X tiempo
+  UNLOCK_PLAN = "unlock_plan", // Desbloquea un plan específico (ej: tier beta)
+  DISCOUNT_PERCENTAGE = "discount_percentage", // Descuento porcentual (ej: 20% off)
+  DISCOUNT_FIXED = "discount_fixed", // Descuento fijo (ej: $500 off)
+  FREE_TRIAL = "free_trial", // Período de prueba gratis extendido
+  FREE_MONTHS = "free_months", // Meses gratis (ej: primer mes gratis)
+  UPGRADE_PLAN = "upgrade_plan", // Upgrade gratuito a plan superior por X tiempo
 }
 
 export enum PromoCodeStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired',
-  EXHAUSTED = 'exhausted', // Cuando se agotaron los usos
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  EXPIRED = "expired",
+  EXHAUSTED = "exhausted", // Cuando se agotaron los usos
 }
 
 export interface ISubscriptionPlan {
@@ -336,7 +339,7 @@ export interface ISubscriptionPlan {
   priceARS: number;
   priceUSD: number;
   priceUYU: number;
-  billingPeriod: 'days' | 'months' | 'years';
+  billingPeriod: "days" | "months" | "years";
   features: string[]; // Lista de características incluidas
   maxClients?: number; // Límite de clientes (null = ilimitado)
   maxStamps?: number; // Límite de sellos por mes (null = ilimitado)
@@ -405,7 +408,7 @@ export interface ICreateSubscriptionPlanDto {
   priceARS: number;
   priceUSD: number;
   priceUYU: number;
-  billingPeriod: 'days' | 'months' | 'years';
+  billingPeriod: "days" | "months" | "years";
   features: string[];
   maxClients?: number;
   maxStamps?: number;
@@ -464,7 +467,7 @@ export interface IValidatePromotionalCodeResponse {
   // Información específica según tipo
   unlocksPlan?: ISubscriptionPlan;
   discount?: {
-    type: 'percentage' | 'fixed';
+    type: "percentage" | "fixed";
     value: number;
   };
   freeMonths?: number;
@@ -642,7 +645,7 @@ export interface IRedemptionDashboard {
 
 // Interfaz extendida para RewardRedemption que incluye ClientCard con recompensas
 export interface IRewardRedemptionWithClientCard
-  extends Omit<IRewardRedemption, 'clientCard'> {
+  extends Omit<IRewardRedemption, "clientCard"> {
   clientCard: IClientCardWithReward;
 }
 
@@ -699,17 +702,17 @@ export interface IDashboard {
 
 // ======= INTERFAZ PARA ESTADÍSTICAS COMPLETAS =======
 export enum MetricKey {
-  STAMPS_ISSUED = 'stampsIssued',
-  ACTIVE_CLIENTS = 'activeClients',
-  REWARDS_REDEEMED = 'rewardsRedeemed',
-  CLIENT_RETENTION = 'clientRetention',
-  VISIT_FREQUENCY = 'visitFrequency',
-  COMPLETION_TIME = 'completionTime',
-  CONVERSION_RATE = 'conversionRate',
-  RECENT_ACTIVITY = 'recentActivity',
+  STAMPS_ISSUED = "stampsIssued",
+  ACTIVE_CLIENTS = "activeClients",
+  REWARDS_REDEEMED = "rewardsRedeemed",
+  CLIENT_RETENTION = "clientRetention",
+  VISIT_FREQUENCY = "visitFrequency",
+  COMPLETION_TIME = "completionTime",
+  CONVERSION_RATE = "conversionRate",
+  RECENT_ACTIVITY = "recentActivity",
 }
 
-export type MetricsSelection = MetricKey[] | 'all';
+export type MetricsSelection = MetricKey[] | "all";
 
 export type StampsIssuedResult = {
   total: number;
@@ -952,7 +955,7 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   businessName?: string;
-  type: 'business' | 'client';
+  type: "business" | "client";
   provider: UserProvider;
   profilePicture?: string;
   isActive: boolean;
@@ -985,7 +988,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<ICreateClientDto, 'password'> {
+  extends Omit<ICreateClientDto, "password"> {
   password?: string;
 }
 
@@ -1012,7 +1015,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
+  sortOrder?: "ASC" | "DESC";
 }
 
 // ======= INTERFACES PARA FILTROS =======
@@ -1315,7 +1318,7 @@ export interface IClientSettings {
   };
   preferences: {
     language: string;
-    theme: 'light' | 'dark' | 'auto';
+    theme: "light" | "dark" | "auto";
   };
 }
 
@@ -1415,23 +1418,23 @@ export type ClientCardSummaryDto = IClientCardSummaryDto;
 // ======= MERCADO PAGO SUBSCRIPTIONS =======
 
 export enum MpPreapprovalStatus {
-  PENDING = 'pending',
-  AUTHORIZED = 'authorized',
-  ACTIVE = 'active',
-  PAUSED = 'paused',
-  CANCELLED = 'cancelled',
-  EXPIRED = 'expired',
+  PENDING = "pending",
+  AUTHORIZED = "authorized",
+  ACTIVE = "active",
+  PAUSED = "paused",
+  CANCELLED = "cancelled",
+  EXPIRED = "expired",
 }
 
 export enum MpPreapprovalPlanStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export enum MpWebhookTopic {
-  SUBSCRIPTION_PREAPPROVAL = 'subscription_preapproval',
-  SUBSCRIPTION_AUTHORIZED_PAYMENT = 'subscription_authorized_payment',
-  SUBSCRIPTION_PREAPPROVAL_PLAN = 'subscription_preapproval_plan',
+  SUBSCRIPTION_PREAPPROVAL = "subscription_preapproval",
+  SUBSCRIPTION_AUTHORIZED_PAYMENT = "subscription_authorized_payment",
+  SUBSCRIPTION_PREAPPROVAL_PLAN = "subscription_preapproval_plan",
 }
 
 // ======= ENTIDADES/MAPPINGS =======
@@ -1444,7 +1447,7 @@ export interface IMpSubscriptionPlanMapping {
   backUrl: string;
   currencyId: string; // 'ARS'
   frequency: number; // 1
-  frequencyType: 'days' | 'months' | 'years';
+  frequencyType: "days" | "months" | "years";
   transactionAmount: number; // 1000.00
   collectorId: number;
   status: string; // 'active' | 'inactive'
@@ -1496,7 +1499,7 @@ export interface IMpSubscriptionIntent {
 export interface ICreateMpIntentDto {
   businessId: number;
   planId: number;
-  source: 'plan_redirect' | 'direct_card';
+  source: "plan_redirect" | "direct_card";
   /** Validación condicional:
    *  - plan_redirect: opcional
    *  - direct_card: requerido
@@ -1540,7 +1543,7 @@ export interface IProcessPaymentDto {
 }
 
 export interface IUpdateMpPreapprovalDto {
-  status?: 'paused' | 'authorized' | 'cancelled' | 'resume';
+  status?: "paused" | "authorized" | "cancelled" | "resume";
   cardToken?: string;
   billingDay?: number; // 1..28
   reason?: string;
@@ -1586,12 +1589,12 @@ export interface IMpPreapprovalPlanRequest {
   reason: string;
   auto_recurring: {
     frequency: number;
-    frequency_type: 'days' | 'months' | 'years';
+    frequency_type: "days" | "months" | "years";
     transaction_amount: number;
     currency_id: string;
     free_trial?: {
       frequency: number;
-      frequency_type: 'days' | 'months';
+      frequency_type: "days" | "months";
     };
   };
   payment_methods_allowed?: {
@@ -1608,7 +1611,7 @@ export interface IMpPreapprovalRequest {
   card_token_id?: string; // solo si vas por direct card
   auto_recurring?: {
     frequency: number;
-    frequency_type: 'days' | 'months';
+    frequency_type: "days" | "months";
     transaction_amount: number;
     currency_id: string;
     start_date?: string;
