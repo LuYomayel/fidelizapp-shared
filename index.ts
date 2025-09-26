@@ -902,6 +902,18 @@ export interface ICreateStampDto {
   expiresAt?: Date;
 }
 
+export type ICreateRewardDto = {
+  name: string;
+  description: string;
+  stampsCost: number;
+  type: RewardType;
+  typeDescription?: string;
+  expirationDate?: Date;
+  stock?: number;
+  oneTimeUse?: boolean;
+};
+export type IUpdateRewardDto = Partial<ICreateRewardDto & { active?: boolean }>;
+
 export interface IRedeemStampDto {
   code: string;
 }
@@ -974,15 +986,6 @@ export interface GoogleOAuthUser {
 }
 
 // ======= INTERFACES PARA FORMULARIOS =======
-export interface CreateRewardForm {
-  name: string;
-  description: string;
-  requiredPoints: number;
-  image?: File;
-  expirationDate?: Date;
-  stock?: number;
-  specialConditions?: string;
-}
 
 export interface AssignPointsForm {
   clientId: string;
