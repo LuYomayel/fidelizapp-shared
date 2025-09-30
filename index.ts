@@ -559,7 +559,7 @@ export interface IBusinessClient {
   availableStamps: number;
   usedStamps: number;
   level: number;
-  lastStampDate: Date;
+  lastStampDate: Date | null;
   totalRedemptions: number;
   createdAt: Date;
 }
@@ -581,10 +581,10 @@ export interface IReward {
   description: string;
   stampsCost: number; // Cantidad de sellos que cuesta la recompensa
   type: RewardType; // Tipo de recompensa
-  typeDescription?: string; // Descripción adicional para tipo "otro"
+  typeDescription: string | null; // Descripción adicional para tipo "otro"
   active: boolean;
-  expirationDate?: Date;
-  stock?: number; // Stock disponible (-1 = ilimitado)
+  expirationDate: Date | null;
+  stock: number | null; // Stock disponible (-1 = ilimitado)
   oneTimeUse: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -907,11 +907,11 @@ export interface ICreateStampDto {
 export type RewardFormState = {
   name: string;
   description: string;
-  stampsCost: string;       // guardamos como string para permitir vacío, zod hace coerce
+  stampsCost: string; // guardamos como string para permitir vacío, zod hace coerce
   type: RewardType;
-  typeDescription: string | undefined;
-  stock: string;            // idem
-  expirationDate: string;   // yyyy-mm-dd
+  typeDescription: string | null;
+  stock: string; // idem
+  expirationDate: string; // yyyy-mm-dd
   oneTimeUse: boolean;
   active: boolean;
 };
@@ -956,23 +956,13 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export type SortOrder = "ASC" | "DESC";
+export type SortOrder = 'ASC' | 'DESC';
 
 export interface PageMeta {
-  page: number;        // página actual (1-based)
-  limit: number;       // items por página
-  totalItems: number;  // total de registros
-  totalPages: number;  // Math.ceil(totalItems / limit)
+  page: number; // página actual (1-based)
+  limit: number; // items por página
+  totalItems: number; // total de registros
+  totalPages: number; // Math.ceil(totalItems / limit)
 }
 
 export interface Paginated<T> {
@@ -980,7 +970,11 @@ export interface Paginated<T> {
   meta: PageMeta;
 }
 
-export const buildMeta = (page: number, limit: number, total: number): PageMeta => ({
+export const buildMeta = (
+  page: number,
+  limit: number,
+  total: number,
+): PageMeta => ({
   page,
   limit,
   totalItems: total,
@@ -997,6 +991,23 @@ export interface BaseFilters {
   // Permite extender sin perder el tipado
   [key: string]: unknown;
 }
+
+export type ClientsAggregates = {
+  totalClients: number;
+  sumTotalStamps: number;
+  sumRedemptions: number; // canjes totales (todas las filas en redemptions)
+};
+
+export type PaginatedResponse<T, A = unknown> = {
+  items: T[];
+  meta: {
+    totalItems: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+    aggregates?: A;
+  };
+};
 
 export interface LoginResponse {
   success: boolean;
