@@ -904,17 +904,29 @@ export interface ICreateStampDto {
   expiresAt?: Date;
 }
 
+export type RewardFormState = {
+  name: string;
+  description: string;
+  stampsCost: string;       // guardamos como string para permitir vacío, zod hace coerce
+  type: RewardType;
+  typeDescription: string | undefined;
+  stock: string;            // idem
+  expirationDate: string;   // yyyy-mm-dd
+  oneTimeUse: boolean;
+  active: boolean;
+};
+
 export type ICreateRewardDto = {
   name: string;
   description: string;
   stampsCost: number;
   type: RewardType;
-  typeDescription?: string;
-  expirationDate?: Date;
-  stock?: number;
-  oneTimeUse?: boolean;
+  typeDescription: string | null;
+  expirationDate: Date | null;
+  stock: number | null;
+  oneTimeUse: boolean;
 };
-export type IUpdateRewardDto = Partial<ICreateRewardDto & { active?: boolean }>;
+export type IUpdateRewardDto = Partial<ICreateRewardDto & { active: boolean }>;
 
 export interface IRedeemStampDto {
   code: string;
@@ -952,6 +964,38 @@ export interface PaginatedResponse<T> {
     total: number;
     totalPages: number;
   };
+}
+
+export type SortOrder = "ASC" | "DESC";
+
+export interface PageMeta {
+  page: number;        // página actual (1-based)
+  limit: number;       // items por página
+  totalItems: number;  // total de registros
+  totalPages: number;  // Math.ceil(totalItems / limit)
+}
+
+export interface Paginated<T> {
+  items: T[];
+  meta: PageMeta;
+}
+
+export const buildMeta = (page: number, limit: number, total: number): PageMeta => ({
+  page,
+  limit,
+  totalItems: total,
+  totalPages: Math.ceil(total / limit),
+});
+export interface BaseFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: string;
+  order?: SortOrder;
+  dateFrom?: Date | string;
+  dateTo?: Date | string;
+  // Permite extender sin perder el tipado
+  [key: string]: unknown;
 }
 
 export interface LoginResponse {
