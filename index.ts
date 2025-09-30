@@ -993,17 +993,17 @@ export interface BaseFilters {
   [key: string]: unknown;
 }
 
-export type ClientsAggregates = {
-  totalClients: number;
-  sumTotalStamps: number;
-  sumRedemptions: number; // canjes totales (todas las filas en redemptions)
-};
-
 export interface PaginatedResponse<T, A = undefined, I = undefined> {
   items: T[];
   meta: PageMeta & { aggregates?: A };
   included?: I;
 }
+
+export type ClientsAggregates = {
+  totalClients: number;
+  sumTotalStamps: number;
+  sumRedemptions: number; // canjes totales (todas las filas en redemptions)
+};
 
 export interface LoginResponse {
   success: boolean;
