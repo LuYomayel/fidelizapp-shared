@@ -998,16 +998,10 @@ export type ClientsAggregates = {
   sumRedemptions: number; // canjes totales (todas las filas en redemptions)
 };
 
-export type PaginatedResponse<T, A = unknown> = {
-  items: T[];
-  meta: {
-    totalItems: number;
-    totalPages: number;
-    page: number;
-    limit: number;
-    aggregates?: A;
-  };
-};
+export type PaginatedResponse<T, I = void> =
+  I extends void
+    ? { items: T[]; meta: PageMeta }
+    : { items: T[]; meta: PageMeta; included: I };
 
 export interface LoginResponse {
   success: boolean;
@@ -1107,14 +1101,15 @@ export interface RedeemStampForm {
   code: string;
 }
 
-export interface StampFilters extends PaginationParams {
+export type StampFilters = BaseFilters & {
   status?: StampStatus;
-  //stampType?: StampType;
-  purchaseType?: PurchaseType;
-  dateFrom?: Date;
-  dateTo?: Date;
-  clientId?: number | string;
-}
+  clientId?: number;
+};
+
+export type StampHistoryIncluded = { clients: IClient[] };
+
+export type StampHistoryResponse =
+  PaginatedResponse<IStampHistory, StampHistoryIncluded>;
 
 export interface ClientCardFilters extends PaginationParams {
   businessId?: number | string;
