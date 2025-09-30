@@ -496,8 +496,9 @@ export interface IStamp {
   createdAt?: Date;
   updatedAt?: Date;
   usedAt?: Date;
-  usedBy?: number | string; // ID del cliente que lo usó
+  usedBy?: number | string | IClient; // ID del cliente que lo usó
   business?: IBusiness; // Relación con el negocio
+  client?: IClient; // Relación con el cliente
 }
 
 export interface IStampHistory {
