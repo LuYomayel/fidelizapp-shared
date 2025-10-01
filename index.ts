@@ -666,6 +666,7 @@ export interface IRedemptionFilters {
 
 export interface IRewardStatistics {
   totalRewards: number;
+  totalActiveRewards: number;
   totalRedemptions: number;
   pendingRedemptions: number;
   mostRedeemedReward?: {
@@ -1114,8 +1115,11 @@ export type StampHistoryAggregates = {
   totalExpired: number;
   totalActive: number;
 };
-export type StampHistoryResponse =
-  PaginatedResponse<IStampHistory, StampHistoryAggregates, StampHistoryIncluded>;
+export type StampHistoryResponse = PaginatedResponse<
+  IStampHistory,
+  StampHistoryAggregates,
+  StampHistoryIncluded
+>;
 
 export interface ClientCardFilters extends PaginationParams {
   businessId?: number | string;
