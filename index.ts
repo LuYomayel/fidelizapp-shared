@@ -496,8 +496,9 @@ export interface IStamp {
   createdAt?: Date;
   updatedAt?: Date;
   usedAt?: Date;
-  usedBy?: number | string; // ID del cliente que lo usó
+  usedBy?: number | string | IClient; // ID del cliente que lo usó
   business?: IBusiness; // Relación con el negocio
+  client?: IClient; // Relación con el cliente
 }
 
 export interface IStampHistory {
@@ -993,16 +994,22 @@ export interface BaseFilters {
   [key: string]: unknown;
 }
 
+export interface PaginatedResponse<T, A = undefined, I = undefined> {
+  items: T[];
+  meta: PageMeta & { aggregates?: A };
+  included?: I;
+}
+
 export type ClientsAggregates = {
   totalClients: number;
   sumTotalStamps: number;
   sumRedemptions: number; // canjes totales (todas las filas en redemptions)
 };
 
-export interface PaginatedResponse<T, A = undefined, I = undefined> {
-  items: T[];
-  meta: PageMeta & { aggregates?: A };
-  included?: I;
+export interface RedemptionAggregates {
+  totalPending: number;
+  totalDelivered: number;
+  totalExpired: number;
 }
 
 export interface LoginResponse {
