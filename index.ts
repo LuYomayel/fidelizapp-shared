@@ -1751,3 +1751,83 @@ export interface IProcessPaymentResponse {
   nextPaymentDate?: string; // Próxima fecha de pago
   mpPreapprovalPlanId: string; // ID del plan en MP
 }
+
+// ======= SCRATCH CARDS =======
+
+export const ScratchIssueMode = {
+  ASSOCIATION: 'on_association',
+  FIRST_OPEN: 'on_first_open',
+  MANUAL: 'manual',
+} as const;
+
+export type ScratchIssueMode =
+  (typeof ScratchIssueMode)[keyof typeof ScratchIssueMode];
+
+export const ScratchCampaignStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const;
+
+export type ScratchCampaignStatus =
+  (typeof ScratchCampaignStatus)[keyof typeof ScratchCampaignStatus];
+
+export interface IScratchCampaign {
+  id: number;
+  business: IBusiness;
+  name: string;
+  status: ScratchCampaignStatus;
+  startDate: Date;
+  endDate: Date;
+  maxCardsPerClient: number;
+  issueMode: ScratchIssueMode;
+  coverImage: string | null;
+  coverText: string | null;
+}
+
+export const ScratchPrizeType = {
+  STAMP: 'stamp',
+  DISCOUNT_FIXED: 'discount_fixed',
+  DISCOUNT_PERCENTAGE: 'discount_percentage',
+  FREE_PRODUCT: 'free_product',
+  // Yo le daria para que siempre haya un premio. Al menos un stamp.
+  NO_REWARD: 'no_reward',
+} as const;
+
+export type ScratchPrizeType =
+  (typeof ScratchPrizeType)[keyof typeof ScratchPrizeType];
+
+export interface IScratchPrize {
+  id: number;
+  name: string;
+  description: string;
+  probability: number;
+  inventoryCap: number;
+  awardedCount: number;
+  type: ScratchPrizeType;
+  value: number;
+  campaign: IScratchCampaign;
+}
+export const ScratchTicketStatus = {
+  ISSUED: 'issued',
+  REVEALED: 'revealed',
+  REDEEMED: 'redeemed',
+  EXPIRED: 'expired',
+  INACTIVE: 'inactive',
+} as const;
+
+export type ScratchTicketStatus =
+  (typeof ScratchTicketStatus)[keyof typeof ScratchTicketStatus];
+
+export interface IScratchTicket {
+  id: number;
+  client: IClient;
+  business: IBusiness;
+  campaign: IScratchCampaign;
+  isActive: boolean;
+  status: ScratchTicketStatus;
+  issuedAt: Date | null;
+  expiredAt: Date | null;
+  revealedAt: Date | null;
+  redeemedAt: Date | null;
+  prize: IScratchPrize;
+}
