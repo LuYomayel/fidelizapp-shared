@@ -667,6 +667,7 @@ export interface IRedemptionFilters {
 
 export interface IRewardStatistics {
   totalRewards: number;
+  totalActiveRewards: number;
   totalRedemptions: number;
   pendingRedemptions: number;
   mostRedeemedReward?: {
@@ -1004,6 +1005,12 @@ export type ClientsAggregates = {
   sumTotalStamps: number;
   sumRedemptions: number; // canjes totales (todas las filas en redemptions)
 };
+
+export interface RedemptionAggregates {
+  totalPending: number;
+  totalDelivered: number;
+  totalExpired: number;
+}
 
 export interface LoginResponse {
   success: boolean;
