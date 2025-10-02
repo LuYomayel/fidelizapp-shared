@@ -1782,6 +1782,7 @@ export interface IScratchCampaign {
   issueMode: ScratchIssueMode;
   coverImage: string | null;
   coverText: string | null;
+  prizes?: IScratchPrize[];
 }
 
 export const ScratchPrizeType = {
@@ -1801,7 +1802,7 @@ export interface IScratchPrize {
   name: string;
   description: string;
   probability: number;
-  inventoryCap: number;
+  inventoryCap: number | null;
   awardedCount: number;
   type: ScratchPrizeType;
   value: number;
@@ -1830,4 +1831,63 @@ export interface IScratchTicket {
   revealedAt: Date | null;
   redeemedAt: Date | null;
   prize: IScratchPrize;
+}
+
+export const ScratchEvents = {
+  PrizeRevealed: 'scratch.prize.revealed',
+} as const;
+
+export type ScratchEvents = (typeof ScratchEvents)[keyof typeof ScratchEvents];
+
+export interface PrizeRevealedPayload {
+  eventId: string; // uuid para idempotencia
+  ticketId: number;
+  businessId: number;
+  clientId: number;
+  campaignId: number;
+  prizeId: number;
+  prizeType: ScratchPrizeType; // ya lo tenés en @shared
+  value: number; // cantidad de estampas o %/monto según type
+  revealedAt: Date;
+}
+
+// DTOs para crear campañas y premios
+export interface ICreateScratchCampaignDto {
+  name: string;
+  status: ScratchCampaignStatus;
+  startDate: Date;
+  endDate: Date;
+  maxCardsPerClient: number;
+  issueMode: ScratchIssueMode;
+  coverImage?: string | null;
+  coverText?: string | null;
+}
+
+export interface IUpdateScratchCampaignDto {
+  name?: string;
+  status?: ScratchCampaignStatus;
+  startDate?: Date;
+  endDate?: Date;
+  maxCardsPerClient?: number;
+  issueMode?: ScratchIssueMode;
+  coverImage?: string | null;
+  coverText?: string | null;
+}
+
+export interface ICreateScratchPrizeDto {
+  name: string;
+  description: string;
+  probability: number;
+  inventoryCap: number;
+  type: ScratchPrizeType;
+  value: number;
+}
+
+export interface IUpdateScratchPrizeDto {
+  name?: string;
+  description?: string;
+  probability?: number;
+  inventoryCap?: number;
+  type?: ScratchPrizeType;
+  value?: number;
 }
