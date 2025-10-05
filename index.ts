@@ -245,6 +245,7 @@ export interface IBusiness {
   country: IBusinessCountry;
   logoPath?: string;
   type: BusinessType;
+  placeId?: string;
   customType?: string;
   instagram?: string;
   tiktok?: string;
@@ -534,6 +535,7 @@ export interface IClientCard {
   client?: IClient;
   business?: IBusiness;
   redemptions?: IStampRedemption[];
+  lastReviewedAt?: Date;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -856,6 +858,7 @@ export interface ICreateBusinessDto {
   postalCode: string;
   province: string;
   country: IBusinessCountry;
+  placeId?: string;
   type: BusinessType;
   customType?: string;
   instagram?: string;
