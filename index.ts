@@ -243,7 +243,6 @@ export interface IBusiness {
   postalCode: string;
   province: string;
   country: IBusinessCountry;
-  placeId?: string;
   logoPath?: string;
   type: BusinessType;
   placeId?: string;
@@ -1269,6 +1268,7 @@ export interface IBusinessProfile {
   createdAt: Date;
   updatedAt: Date;
   subscription: IBusinessSubscription;
+  placeId?: string;
 }
 
 export interface IClientProfile {
