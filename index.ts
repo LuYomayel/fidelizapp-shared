@@ -291,6 +291,7 @@ export interface IClient {
   mustChangePassword: boolean;
   suspendedReason: string | null;
   suspendedAt: Date | null;
+  winners: IRaffleWinner[];
 }
 
 // ======= INTERFACES PARA SISTEMA DE SUSCRIPCIONES =======
@@ -1895,4 +1896,85 @@ export interface IUpdateScratchPrizeDto {
   inventoryCap?: number;
   type?: ScratchPrizeType;
   value?: number;
+}
+
+// Raffle
+export interface IRaffle {
+  id: number;
+  name: string;
+  description: string;
+  raffleDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
+  inclusionType: RaffleInclusionType;
+  rafflePrizes: IRafflePrize[];
+}
+
+export const RaffleInclusionType = {
+  ALL_CLIENTS: 'all_clients',
+  ON_ASSOCIATION: 'on_association',
+  ON_ASSOCIATION_AND_STAMPS: 'association_and_stamps',
+  ON_STAMPS: 'on_stamps',
+} as const;
+
+export type RaffleInclusionType =
+  (typeof RaffleInclusionType)[keyof typeof RaffleInclusionType];
+
+export interface IRafflePrize {
+  id: number;
+  description: string | null;
+  prizePosition: number;
+  type: RafflePrizeType;
+  value: number;
+  raffle: IRaffle;
+}
+
+export const RafflePrizeType = {
+  PRODUCT: 'product',
+  PERCENTAGE_DISCOUNT: 'percentage_discount',
+  FIXED_DISCOUNT: 'fixed_discount',
+  FREE_PRODUCT: 'free_product',
+  OTHER: 'other',
+} as const;
+
+export type RafflePrizeType =
+  (typeof RafflePrizeType)[keyof typeof RafflePrizeType];
+
+export interface IRaffleWinner {
+  id: number;
+  raffle: IRaffle;
+  client: IClient;
+  prize: IRafflePrize;
+  createdAt: Date;
+}
+
+export interface ICreateRaffleDto {
+  name: string;
+  description: string;
+  raffleDate: Date;
+  startDate: Date | null;
+  endDate: Date | null;
+  inclusionType: RaffleInclusionType;
+}
+
+export interface ICreateRafflePrizeDto {
+  description: string | null;
+  type: RafflePrizeType;
+  value: number;
+  prizePosition: number;
+  raffleId: number;
+}
+
+export interface ICreateRaffleWinnerDto {
+  raffleId: number;
+  clientId: number;
+  prizeId: number;
+}
+
+export interface IUpdateRafflePrizeDto extends Partial<ICreateRafflePrizeDto> {
+  id: number;
+}
+
+export interface IUpdateRaffleDto extends Partial<ICreateRaffleDto> {
+  id: number;
 }
