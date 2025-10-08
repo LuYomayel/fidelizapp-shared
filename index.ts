@@ -243,6 +243,7 @@ export interface IBusiness {
   postalCode: string;
   province: string;
   country: IBusinessCountry;
+  placeId?: string;
   logoPath?: string;
   type: BusinessType;
   placeId?: string;
@@ -1332,6 +1333,7 @@ export interface IUpdateBusinessProfileDto {
   adminLastName?: string; // Apellido del administrador del negocio
   internalPhone?: string;
   externalPhone?: string;
+  placeId?: string;
   size?: BusinessSize;
   street?: string;
   neighborhood?: string;
