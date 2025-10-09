@@ -1910,6 +1910,15 @@ export interface IRaffle {
   rafflePrizes: IRafflePrize[];
 }
 
+export enum RaffleStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+}
+
 export const RaffleInclusionType = {
   ALL_CLIENTS: 'all_clients',
   ON_ASSOCIATION: 'on_association',
@@ -1925,7 +1934,7 @@ export interface IRafflePrize {
   description: string | null;
   prizePosition: number;
   type: RafflePrizeType;
-  value: number;
+  value: number | null;
   raffle: IRaffle;
 }
 
