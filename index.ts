@@ -1908,6 +1908,7 @@ export interface IRaffle {
   endDate: Date | null;
   inclusionType: RaffleInclusionType;
   rafflePrizes: IRafflePrize[];
+  status: RaffleStatus;
 }
 
 export enum RaffleStatus {
