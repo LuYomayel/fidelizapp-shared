@@ -1956,6 +1956,14 @@ export interface IRaffleWinner {
   createdAt: Date;
 }
 
+export interface IRafflePrizeRedemption {
+  id: number;
+  redemptionCode: string;
+  status: RedemptionStatus;
+  rafflePrize: IRafflePrize;
+  client: IClient;
+  business: IBusiness;
+}
 export interface ICreateRaffleDto {
   name: string;
   raffleDate: Date;
