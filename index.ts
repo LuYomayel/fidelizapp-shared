@@ -1959,6 +1959,9 @@ export interface IRaffleWinner {
 export interface IRafflePrizeRedemption {
   id: number;
   redemptionCode: string;
+  deliveredAt?: Date;
+  deliveredBy?: string;
+  notes?: string;
   status: RedemptionStatus;
   rafflePrize: IRafflePrize;
   client: IClient;
