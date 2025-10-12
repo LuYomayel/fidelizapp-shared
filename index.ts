@@ -1793,10 +1793,9 @@ export interface IScratchCampaign {
 
 export const ScratchPrizeType = {
   STAMP: 'stamp',
-  DISCOUNT_FIXED: 'discount_fixed',
-  DISCOUNT_PERCENTAGE: 'discount_percentage',
+  DISCOUNT: 'discount',
   FREE_PRODUCT: 'free_product',
-  // Yo le daria para que siempre haya un premio. Al menos un stamp.
+  OTHER: 'other',
   NO_REWARD: 'no_reward',
 } as const;
 
@@ -1806,12 +1805,12 @@ export type ScratchPrizeType =
 export interface IScratchPrize {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   probability: number;
   inventoryCap: number | null;
-  awardedCount: number;
   type: ScratchPrizeType;
-  value: number;
+  awardedCount: number;
+  value: number | null;
   campaign: IScratchCampaign;
 }
 export const ScratchTicketStatus = {
@@ -1898,6 +1897,17 @@ export interface IUpdateScratchPrizeDto {
   value?: number;
 }
 
+export interface IScratchPrizeRedemption {
+  id: number;
+  redemptionCode: string;
+  deliveredAt?: Date;
+  deliveredBy?: string;
+  notes?: string;
+  status: RedemptionStatus;
+  scratchPrize: string;
+  client: IClient;
+  business: IBusiness;
+}
 // Raffle
 export interface IRaffle {
   id: number;
