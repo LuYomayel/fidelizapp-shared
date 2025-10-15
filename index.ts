@@ -266,6 +266,8 @@ export interface IBusiness {
   subscriptionPlanId?: number;
   currentSubscription?: IBusinessSubscription;
 
+  subscription: IBusinessSubscription;
+
   emoji: string;
   cardTheme?: string; // Tema de la tarjeta de fidelidad
 }
