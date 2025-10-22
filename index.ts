@@ -1620,6 +1620,7 @@ export interface IProcessPaymentDto {
   mpPreapprovalPlanId: string; // ID del plan de preapproval en MP
   promotionalCode?: string; // ID del código promocional (opcional)
   preToken?: string; // Token de pre-registro (opcional)
+  isUpgrade?: boolean; // Indica si es una actualización de plan
 }
 
 export interface IUpdateMpPreapprovalDto {
