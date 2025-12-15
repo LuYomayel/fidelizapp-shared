@@ -1621,7 +1621,7 @@ export interface IProcessPaymentDto {
   businessId: number; // ID del negocio
   payerEmail: string; // Email del pagador
   mpPreapprovalPlanId: string; // ID del plan de preapproval en MP
-  currency: string; // "ARS", "UYU", "USD"
+  currency?: string; // "ARS", "UYU", "USD"
   promotionalCode?: string; // ID del código promocional (opcional)
   preToken?: string; // Token de pre-registro (opcional)
   isUpgrade?: boolean; // Indica si es una actualización de plan
