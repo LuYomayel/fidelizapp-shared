@@ -150,6 +150,7 @@ export interface ClientUser extends BaseUser {
   provider: 'email' | 'google';
   firstName?: string;
   lastName?: string;
+  birthDate: Date | null;
   picture?: string;
 }
 
@@ -184,6 +185,7 @@ export interface ClientJwtPayload extends BaseJwtPayload {
   email: string;
   provider: 'email' | 'google';
   emailVerified: boolean;
+  birthDate: Date | null;
 }
 
 export interface BusinessJwtPayload extends BaseJwtPayload {
