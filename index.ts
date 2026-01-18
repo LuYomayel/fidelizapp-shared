@@ -1358,6 +1358,7 @@ export interface IUpdateBusinessProfileDto {
 export interface IUpdateClientProfileDto {
   firstName?: string;
   lastName?: string;
+  birthDate?: Date | string | null;
 }
 
 export interface IChangePasswordDto {
