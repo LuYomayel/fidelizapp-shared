@@ -284,6 +284,7 @@ export interface IClient {
   password?: string;
   firstName: string;
   lastName: string;
+  birthDate: Date | null;
   googleId?: string;
   profilePicture?: string;
   provider: UserProvider;
@@ -1279,6 +1280,7 @@ export interface IClientProfile {
   email: string;
   firstName: string;
   lastName: string;
+  birthDate: Date | null;
   profilePicture?: string;
   profilePictureUrl?: string;
   provider: UserProvider;
