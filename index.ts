@@ -161,6 +161,7 @@ export interface BusinessUser extends BaseUser {
   emailVerified: boolean;
   provider: 'email' | 'google';
   picture?: string;
+  subscriptionTier?: SubscriptionTier;
 }
 
 export interface PlatformAdminUser extends BaseUser {
@@ -583,6 +584,8 @@ export interface IStampRedemption {
   clientCard?: IClientCard;
 }
 
+export type RewardScope = 'public' | 'birthday_only' | 'custom';
+
 export interface IReward {
   id: number;
   businessId: number;
@@ -595,6 +598,8 @@ export interface IReward {
   expirationDate: Date | null;
   stock: number | null; // Stock disponible (-1 = ilimitado)
   oneTimeUse: boolean;
+  isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
+  rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -937,7 +942,33 @@ export type ICreateRewardDto = {
   stock: number | null;
   oneTimeUse: boolean;
 };
-export type IUpdateRewardDto = Partial<ICreateRewardDto & { active: boolean }>;
+export type IUpdateRewardDto = Partial<
+  ICreateRewardDto & { active: boolean; isBirthdayOnly?: boolean }
+>;
+
+// ======= BIRTHDAY REWARD =======
+export type BirthdayRewardType = 'stamps' | 'reward';
+
+export interface IBirthdayRewardConfig {
+  id: number;
+  businessId: number;
+  enabled: boolean;
+  type: BirthdayRewardType;
+  stampsAmount: number | null;
+  rewardId: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  reward?: IReward | null;
+}
+
+export interface IUpsertBirthdayRewardConfigDto {
+  enabled: boolean;
+  type: BirthdayRewardType;
+  stampsAmount?: number;
+  rewardId?: number;
+  isBirthdayOnly?: boolean; // Si usa reward existente: si ocultar de lista pública
+  newReward?: ICreateRewardDto; // Si crea reward nueva (siempre isBirthdayOnly=true)
+}
 
 export interface IRedeemStampDto {
   code: string;
