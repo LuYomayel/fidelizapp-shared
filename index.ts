@@ -543,6 +543,7 @@ export interface IClientCard {
   business?: IBusiness;
   redemptions?: IStampRedemption[];
   lastReviewedAt?: Date;
+  hiddenAt?: Date | null;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -1947,6 +1948,7 @@ export interface IScratchPrizeRedemption {
   scratchPrize: string;
   client: IClient;
   business: IBusiness;
+  createdAt?: Date;
 }
 // Raffle
 export interface IRaffle {
@@ -2016,6 +2018,7 @@ export interface IRafflePrizeRedemption {
   rafflePrize: IRafflePrize;
   client: IClient;
   business: IBusiness;
+  createdAt?: Date;
 }
 export interface ICreateRaffleDto {
   name: string;
