@@ -625,6 +625,7 @@ export interface IRewardRedemption {
   notes?: string; // Notas adicionales del canje
   redeemedAt: Date;
   updatedAt: Date;
+  wasNotified?: boolean;
   // Relaciones
   reward: IReward;
   client: IClient;
@@ -1895,6 +1896,38 @@ export interface PrizeRevealedPayload {
   prizeType: ScratchPrizeType; // ya lo tenés en @shared
   value: number; // cantidad de estampas o %/monto según type
   revealedAt: Date;
+}
+
+// ======= CLIENT EVENTS =======
+export const ClientEvents = {
+  BirthDateUpdated: 'client.birthDate.updated',
+} as const;
+
+export type ClientEvents = (typeof ClientEvents)[keyof typeof ClientEvents];
+
+export interface BirthDateUpdatedPayload {
+  clientId: number;
+  birthDate: Date;
+}
+
+// ======= CLIENT NOTIFICATIONS =======
+export enum NotificationType {
+  BIRTHDAY_REWARD = 'birthday_reward',
+  BIRTHDAY_STAMPS = 'birthday_stamps',
+  RAFFLE_PRIZE = 'raffle_prize',
+}
+
+export interface IClientNotification {
+  id: number;
+  clientId: number;
+  businessId: number;
+  type: NotificationType;
+  referenceId?: number | null;
+  title: string;
+  message: string;
+  wasNotified: boolean;
+  createdAt: Date;
+  business?: IBusiness;
 }
 
 // DTOs para crear campañas y premios
