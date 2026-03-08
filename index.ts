@@ -1386,6 +1386,8 @@ export interface IUpdateBusinessProfileDto {
   website?: string;
   stampsForReward?: number;
   rewardDescription?: string;
+  cardTheme?: string;
+  emoji?: string;
 }
 
 export interface IUpdateClientProfileDto {
