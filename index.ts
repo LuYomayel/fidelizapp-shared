@@ -1917,6 +1917,7 @@ export enum NotificationType {
   BIRTHDAY_REWARD = 'birthday_reward',
   BIRTHDAY_STAMPS = 'birthday_stamps',
   RAFFLE_PRIZE = 'raffle_prize',
+  PENDING_STAMPS = 'pending_stamps',
 }
 
 export interface IClientNotification {
@@ -1929,6 +1930,34 @@ export interface IClientNotification {
   message: string;
   wasNotified: boolean;
   createdAt: Date;
+  business?: IBusiness;
+}
+
+// ======= PENDING STAMP GRANTS =======
+
+export enum PendingStampSource {
+  BIRTHDAY = 'birthday',
+  SCRATCH_CARD = 'scratch_card',
+}
+
+export enum PendingStampGrantStatus {
+  PENDING = 'pending',
+  REDEEMED = 'redeemed',
+  EXPIRED = 'expired',
+}
+
+export interface IPendingStampGrant {
+  id: number;
+  clientId: number;
+  businessId: number;
+  quantity: number;
+  redeemedQuantity: number;
+  lostQuantity: number;
+  source: PendingStampSource;
+  sourceReferenceId?: number | null;
+  status: PendingStampGrantStatus;
+  createdAt: Date;
+  redeemedAt?: Date | null;
   business?: IBusiness;
 }
 
