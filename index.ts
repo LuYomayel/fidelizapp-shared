@@ -2203,3 +2203,52 @@ export interface IUpdateRafflePrizeDto extends Partial<ICreateRafflePrizeDto> {
 export interface IUpdateRaffleDto extends Partial<ICreateRaffleDto> {
   id: number;
 }
+
+// ======= FUDO INTEGRATION =======
+
+export enum FudoSaleGrantReason {
+  GRANTED = 'granted',
+  BELOW_MINIMUM = 'below_minimum',
+  CLIENT_NOT_FOUND = 'client_not_found',
+  NO_CUSTOMER = 'no_customer',
+}
+
+export interface IFudoConfig {
+  id: number;
+  businessId: number;
+  enabled: boolean;
+  lastSyncAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IFudoCustomerMapping {
+  id: number;
+  businessId: number;
+  clientId: number;
+  fudoCustomerId: string;
+  syncedAt: Date;
+}
+
+export interface IFudoProcessedSale {
+  id: number;
+  businessId: number;
+  fudoSaleId: string;
+  fudoCustomerEmail: string | null;
+  saleTotal: number;
+  stampGranted: boolean;
+  stampGrantReason: FudoSaleGrantReason | null;
+  clientCardId: number | null;
+  processedAt: Date;
+}
+
+export interface ICreateFudoConfigDto {
+  apiKey: string;
+  apiSecret: string;
+}
+
+export interface IFudoSyncResult {
+  synced: number;
+  skipped: number;
+  errors: number;
+}
