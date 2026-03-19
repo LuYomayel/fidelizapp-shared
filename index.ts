@@ -2261,5 +2261,6 @@ export interface ICreateFudoConfigDto {
 export interface IFudoSyncResult {
   synced: number;
   skipped: number;
+  alreadyInFudo: number;
   errors: number;
 }
