@@ -2232,6 +2232,14 @@ export interface IFudoCustomerMapping {
   syncedAt: Date;
 }
 
+export interface IFudoSaleProductSnapshot {
+  fudoProductId: string;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  category: string | null;
+}
+
 export interface IFudoProcessedSale {
   id: number;
   businessId: number;
@@ -2241,6 +2249,7 @@ export interface IFudoProcessedSale {
   stampGranted: boolean;
   stampGrantReason: FudoSaleGrantReason | null;
   clientCardId: number | null;
+  productsSnapshot: IFudoSaleProductSnapshot[] | null;
   processedAt: Date;
 }
 
@@ -2252,5 +2261,6 @@ export interface ICreateFudoConfigDto {
 export interface IFudoSyncResult {
   synced: number;
   skipped: number;
+  alreadyInFudo: number;
   errors: number;
 }
