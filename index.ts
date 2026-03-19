@@ -1398,6 +1398,7 @@ export interface IBusinessProfile {
   updatedAt: Date;
   subscription: IBusinessSubscription;
   placeId?: string;
+  clientCount?: number;
 }
 
 export interface IClientProfile {
