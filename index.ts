@@ -2008,6 +2008,7 @@ export enum NotificationType {
   BIRTHDAY_STAMPS = 'birthday_stamps',
   RAFFLE_PRIZE = 'raffle_prize',
   PENDING_STAMPS = 'pending_stamps',
+  FUDO_STAMP = 'fudo_stamp',
 }
 
 export interface IClientNotification {
@@ -2028,6 +2029,7 @@ export interface IClientNotification {
 export enum PendingStampSource {
   BIRTHDAY = 'birthday',
   SCRATCH_CARD = 'scratch_card',
+  FUDO = 'fudo',
 }
 
 export enum PendingStampGrantStatus {
