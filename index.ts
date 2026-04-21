@@ -3,9 +3,9 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = '1-5 sucursales',
-  MEDIUM = '5-10 sucursales',
-  LARGE = '+10 sucursales',
+  SMALL = "1-5 sucursales",
+  MEDIUM = "5-10 sucursales",
+  LARGE = "+10 sucursales",
 }
 
 export enum BusinessType {
@@ -20,20 +20,20 @@ export enum BusinessType {
 }
 
 export enum TransactionType {
-  ACUMULATION = 'acumulacion',
-  EXCHANGE = 'canje',
-  REWARD = 'bonificacion',
-  PENALTY = 'penalizacion',
+  ACUMULATION = "acumulacion",
+  EXCHANGE = "canje",
+  REWARD = "bonificacion",
+  PENALTY = "penalizacion",
 }
 
 export enum AdminRole {
-  OWNER = 'propietario',
-  EMPLOYEE = 'empleado',
+  OWNER = "propietario",
+  EMPLOYEE = "empleado",
 }
 
 export enum UserProvider {
-  EMAIL = 'email',
-  GOOGLE = 'google',
+  EMAIL = "email",
+  GOOGLE = "google",
 }
 
 export const BUSINESS_COUNTRIES = {
@@ -55,46 +55,46 @@ export type ISubscriptionPlanCurrency =
 
 // ======= NUEVOS ENUMS PARA SISTEMA DE SELLOS =======
 export enum StampType {
-  PURCHASE = 'compra',
-  VISIT = 'visita',
-  REFERRAL = 'referencia',
-  BONUS = 'bonus',
-  SPECIAL = 'especial',
+  PURCHASE = "compra",
+  VISIT = "visita",
+  REFERRAL = "referencia",
+  BONUS = "bonus",
+  SPECIAL = "especial",
 }
 
 export enum StampStatus {
-  ACTIVE = 'activo',
-  USED = 'usado',
-  EXPIRED = 'expirado',
-  CANCELLED = 'cancelado',
+  ACTIVE = "activo",
+  USED = "usado",
+  EXPIRED = "expirado",
+  CANCELLED = "cancelado",
 }
 
 export enum PurchaseType {
-  SMALL = 'pequeña',
-  MEDIUM = 'mediana',
-  LARGE = 'grande',
-  SPECIAL = 'especial',
+  SMALL = "pequeña",
+  MEDIUM = "mediana",
+  LARGE = "grande",
+  SPECIAL = "especial",
 }
 
 // ======= ENUMS PARA SISTEMA DE RECOMPENSAS =======
 export enum RedemptionStatus {
-  PENDING = 'pending',
-  DELIVERED = 'delivered',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  DELIVERED = "delivered",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 export enum RewardType {
-  FREE_PRODUCT = 'producto_gratis',
-  DISCOUNT = 'descuento',
-  OTHER = 'otro',
+  FREE_PRODUCT = "producto_gratis",
+  DISCOUNT = "descuento",
+  OTHER = "otro",
 }
 
 // ======= ENUMS/DTOS PARA ANUNCIOS =======
 export enum AnnouncementType {
-  NEWS = 'NEWS',
-  EVENT = 'EVENT',
-  PROMOTION = 'PROMOTION',
+  NEWS = "NEWS",
+  EVENT = "EVENT",
+  PROMOTION = "PROMOTION",
 }
 
 export interface IAnnouncement {
@@ -138,16 +138,16 @@ export interface IUpdateAnnouncementDto
 export interface BaseUser {
   userId: number;
   username: string;
-  type: 'client' | 'business' | 'platform';
+  type: "client" | "business" | "platform";
 }
 
 export interface ClientUser extends BaseUser {
-  type: 'client';
+  type: "client";
   clientId: number;
 
   email: string;
   emailVerified: boolean;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   firstName?: string;
   lastName?: string;
   birthDate: Date | null;
@@ -155,18 +155,19 @@ export interface ClientUser extends BaseUser {
 }
 
 export interface BusinessUser extends BaseUser {
-  type: 'business';
+  type: "business";
   businessId: number;
   email: string;
   emailVerified: boolean;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   picture?: string;
+  subscriptionTier?: SubscriptionTier;
 }
 
 export interface PlatformAdminUser extends BaseUser {
-  type: 'platform';
+  type: "platform";
   email: string;
-  role: 'superadmin' | 'admin';
+  role: "superadmin" | "admin";
 }
 
 // Union type para req.user
@@ -176,30 +177,30 @@ export type AuthenticatedUser = ClientUser | BusinessUser | PlatformAdminUser;
 export interface BaseJwtPayload {
   username: string;
   sub: number;
-  type: 'client' | 'business' | 'platform';
+  type: "client" | "business" | "platform";
   suspended: string | null;
 }
 
 export interface ClientJwtPayload extends BaseJwtPayload {
-  type: 'client';
+  type: "client";
   email: string;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   emailVerified: boolean;
   birthDate: Date | null;
 }
 
 export interface BusinessJwtPayload extends BaseJwtPayload {
-  type: 'business';
+  type: "business";
   email: string;
-  provider: 'email' | 'google';
+  provider: "email" | "google";
   emailVerified: boolean;
   subscriptionTier: SubscriptionTier;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
-  type: 'platform';
+  type: "platform";
   email: string;
-  role: 'superadmin' | 'admin';
+  role: "superadmin" | "admin";
 }
 
 export type JwtPayload =
@@ -209,11 +210,11 @@ export type JwtPayload =
 
 // Type guards para verificar el tipo de usuario
 export function isClientUser(user: AuthenticatedUser): user is ClientUser {
-  return user.type === 'client';
+  return user.type === "client";
 }
 
 export function isBusinessUser(user: AuthenticatedUser): user is BusinessUser {
-  return user.type === 'business';
+  return user.type === "business";
 }
 
 // Interfaces para request con usuario autenticado
@@ -306,36 +307,36 @@ export type SubscriptionTier = string;
 
 // Tiers predefinidos comunes (puedes crear más según necesites)
 export const SUBSCRIPTION_TIERS = {
-  BETA: 'beta', // Plan beta/conejillo de indias (oculto, activado por código)
-  FREE: 'free', // Plan gratuito
-  BASIC: 'basic', // Plan básico
-  STANDARD: 'standard', // Plan estándar
-  PREMIUM: 'premium', // Plan premium
-  ENTERPRISE: 'enterprise', // Plan empresarial
+  BETA: "beta", // Plan beta/conejillo de indias (oculto, activado por código)
+  FREE: "free", // Plan gratuito
+  BASIC: "basic", // Plan básico
+  STANDARD: "standard", // Plan estándar
+  PREMIUM: "premium", // Plan premium
+  ENTERPRISE: "enterprise", // Plan empresarial
 } as const;
 
 export enum SubscriptionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
 }
 
 // ======= ENUMS PARA CÓDIGOS PROMOCIONALES =======
 export enum PromoCodeType {
-  UNLOCK_PLAN = 'unlock_plan', // Desbloquea un plan específico (ej: tier beta)
-  DISCOUNT_PERCENTAGE = 'discount_percentage', // Descuento porcentual (ej: 20% off)
-  DISCOUNT_FIXED = 'discount_fixed', // Descuento fijo (ej: $500 off)
-  FREE_TRIAL = 'free_trial', // Período de prueba gratis extendido
-  FREE_MONTHS = 'free_months', // Meses gratis (ej: primer mes gratis)
-  UPGRADE_PLAN = 'upgrade_plan', // Upgrade gratuito a plan superior por X tiempo
+  UNLOCK_PLAN = "unlock_plan", // Desbloquea un plan específico (ej: tier beta)
+  DISCOUNT_PERCENTAGE = "discount_percentage", // Descuento porcentual (ej: 20% off)
+  DISCOUNT_FIXED = "discount_fixed", // Descuento fijo (ej: $500 off)
+  FREE_TRIAL = "free_trial", // Período de prueba gratis extendido
+  FREE_MONTHS = "free_months", // Meses gratis (ej: primer mes gratis)
+  UPGRADE_PLAN = "upgrade_plan", // Upgrade gratuito a plan superior por X tiempo
 }
 
 export enum PromoCodeStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired',
-  EXHAUSTED = 'exhausted', // Cuando se agotaron los usos
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  EXPIRED = "expired",
+  EXHAUSTED = "exhausted", // Cuando se agotaron los usos
 }
 
 export interface ISubscriptionPlan {
@@ -474,7 +475,7 @@ export interface IValidatePromotionalCodeResponse {
   // Información específica según tipo
   unlocksPlan?: ISubscriptionPlan;
   discount?: {
-    type: 'percentage' | 'fixed';
+    type: "percentage" | "fixed";
     value: number;
   };
   freeMonths?: number;
@@ -542,6 +543,7 @@ export interface IClientCard {
   business?: IBusiness;
   redemptions?: IStampRedemption[];
   lastReviewedAt?: Date;
+  hiddenAt?: Date | null;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -583,6 +585,8 @@ export interface IStampRedemption {
   clientCard?: IClientCard;
 }
 
+export type RewardScope = 'public' | 'birthday_only' | 'custom';
+
 export interface IReward {
   id: number;
   businessId: number;
@@ -595,6 +599,8 @@ export interface IReward {
   expirationDate: Date | null;
   stock: number | null; // Stock disponible (-1 = ilimitado)
   oneTimeUse: boolean;
+  isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
+  rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -619,6 +625,7 @@ export interface IRewardRedemption {
   notes?: string; // Notas adicionales del canje
   redeemedAt: Date;
   updatedAt: Date;
+  wasNotified?: boolean;
   // Relaciones
   reward: IReward;
   client: IClient;
@@ -652,7 +659,7 @@ export interface IRedemptionDashboard {
 
 // Interfaz extendida para RewardRedemption que incluye ClientCard con recompensas
 export interface IRewardRedemptionWithClientCard
-  extends Omit<IRewardRedemption, 'clientCard'> {
+  extends Omit<IRewardRedemption, "clientCard"> {
   clientCard: IClientCardWithReward;
 }
 
@@ -718,6 +725,96 @@ export enum MetricKey {
   COMPLETION_TIME = 'completionTime',
   CONVERSION_RATE = 'conversionRate',
   RECENT_ACTIVITY = 'recentActivity',
+  IMPACT_SUMMARY = 'impactSummary',
+  BASIC_STATS = 'basicStats',
+  RECENT_CLIENTS = 'recentClients',
+  CUSTOM_CARD_THEME = 'customCardTheme',
+  GOOGLE_REVIEWS = 'googleReviews',
+  ANNOUNCEMENTS = 'announcements',
+  GAMES = 'games',
+  BIRTHDAY_REWARD = 'birthdayReward',
+}
+export interface IStatistics {
+  // Métricas principales
+  stampsIssued: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number; // Porcentaje de crecimiento
+  };
+
+  activeClients: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number;
+  };
+
+  rewardsRedeemed: {
+    total: number;
+    currentMonth: number;
+    previousMonth: number;
+    growth: number;
+  };
+
+  clientRetention: {
+    rate: number; // Porcentaje de retención
+    currentPeriod: number; // Retención período actual
+    previousPeriod: number; // Retención período anterior
+    growth: number; // Cambio en retención
+  };
+
+  // Métricas avanzadas
+  visitFrequency: {
+    averageStampsPerClient: number;
+    averageVisitsPerMonth: number;
+    mostActiveClients: Array<{
+      clientId: number;
+      clientName: string;
+      totalStamps: number;
+      lastVisit: Date;
+    }>;
+  };
+
+  completionTime: {
+    averageDaysToComplete: number;
+    fastestCompletion: number;
+    slowestCompletion: number;
+    completionDistribution: Array<{
+      daysRange: string;
+      clientCount: number;
+    }>;
+  };
+
+  conversionRate: {
+    stampsToRewards: number; // % de sellos que se convierten en recompensas
+    clientsWhoRedeem: number; // % de clientes que canjean al menos una recompensa
+    averageStampsBeforeRedemption: number;
+  };
+
+  // Datos adicionales para insights
+  periodComparison: {
+    period: "month" | "quarter" | "year";
+    current: Date;
+    previous: Date;
+  };
+
+  recentActivity: {
+    newClients: Array<{
+      clientId: number;
+      clientName: string;
+      email: string;
+      joinedAt: Date;
+      totalStamps: number;
+      availableStamps: number;
+    }>;
+    recentRedemptions: Array<{
+      clientName: string;
+      rewardName: string;
+      redeemedAt: Date;
+      stampsSpent: number;
+    }>;
+  };
 }
 
 export type MetricsSelection = MetricKey[] | 'all';
@@ -937,7 +1034,33 @@ export type ICreateRewardDto = {
   stock: number | null;
   oneTimeUse: boolean;
 };
-export type IUpdateRewardDto = Partial<ICreateRewardDto & { active: boolean }>;
+export type IUpdateRewardDto = Partial<
+  ICreateRewardDto & { active: boolean; isBirthdayOnly?: boolean }
+>;
+
+// ======= BIRTHDAY REWARD =======
+export type BirthdayRewardType = 'stamps' | 'reward';
+
+export interface IBirthdayRewardConfig {
+  id: number;
+  businessId: number;
+  enabled: boolean;
+  type: BirthdayRewardType;
+  stampsAmount: number | null;
+  rewardId: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  reward?: IReward | null;
+}
+
+export interface IUpsertBirthdayRewardConfigDto {
+  enabled: boolean;
+  type: BirthdayRewardType;
+  stampsAmount?: number;
+  rewardId?: number;
+  isBirthdayOnly?: boolean; // Si usa reward existente: si ocultar de lista pública
+  newReward?: ICreateRewardDto; // Si crea reward nueva (siempre isBirthdayOnly=true)
+}
 
 export interface IRedeemStampDto {
   code: string;
@@ -1039,7 +1162,7 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   businessName?: string;
-  type: 'business' | 'client';
+  type: "business" | "client";
   provider: UserProvider;
   profilePicture?: string;
   isActive: boolean;
@@ -1063,7 +1186,7 @@ export interface AssignPointsForm {
 }
 
 export interface ClientRegistrationForm
-  extends Omit<ICreateClientDto, 'password'> {
+  extends Omit<ICreateClientDto, "password"> {
   password?: string;
 }
 
@@ -1090,7 +1213,7 @@ export interface PaginationParams {
   limit?: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
+  sortOrder?: "ASC" | "DESC";
 }
 
 // ======= INTERFACES PARA FILTROS =======
@@ -1275,6 +1398,7 @@ export interface IBusinessProfile {
   updatedAt: Date;
   subscription: IBusinessSubscription;
   placeId?: string;
+  clientCount?: number;
 }
 
 export interface IClientProfile {
@@ -1353,6 +1477,8 @@ export interface IUpdateBusinessProfileDto {
   website?: string;
   stampsForReward?: number;
   rewardDescription?: string;
+  cardTheme?: string;
+  emoji?: string;
 }
 
 export interface IUpdateClientProfileDto {
@@ -1406,7 +1532,7 @@ export interface IClientSettings {
   };
   preferences: {
     language: string;
-    theme: 'light' | 'dark' | 'auto';
+    theme: "light" | "dark" | "auto";
   };
 }
 
@@ -1865,6 +1991,69 @@ export interface PrizeRevealedPayload {
   revealedAt: Date;
 }
 
+// ======= CLIENT EVENTS =======
+export const ClientEvents = {
+  BirthDateUpdated: 'client.birthDate.updated',
+} as const;
+
+export type ClientEvents = (typeof ClientEvents)[keyof typeof ClientEvents];
+
+export interface BirthDateUpdatedPayload {
+  clientId: number;
+  birthDate: Date;
+}
+
+// ======= CLIENT NOTIFICATIONS =======
+export enum NotificationType {
+  BIRTHDAY_REWARD = 'birthday_reward',
+  BIRTHDAY_STAMPS = 'birthday_stamps',
+  RAFFLE_PRIZE = 'raffle_prize',
+  PENDING_STAMPS = 'pending_stamps',
+  FUDO_STAMP = 'fudo_stamp',
+}
+
+export interface IClientNotification {
+  id: number;
+  clientId: number;
+  businessId: number;
+  type: NotificationType;
+  referenceId?: number | null;
+  title: string;
+  message: string;
+  wasNotified: boolean;
+  createdAt: Date;
+  business?: IBusiness;
+}
+
+// ======= PENDING STAMP GRANTS =======
+
+export enum PendingStampSource {
+  BIRTHDAY = 'birthday',
+  SCRATCH_CARD = 'scratch_card',
+  FUDO = 'fudo',
+}
+
+export enum PendingStampGrantStatus {
+  PENDING = 'pending',
+  REDEEMED = 'redeemed',
+  EXPIRED = 'expired',
+}
+
+export interface IPendingStampGrant {
+  id: number;
+  clientId: number;
+  businessId: number;
+  quantity: number;
+  redeemedQuantity: number;
+  lostQuantity: number;
+  source: PendingStampSource;
+  sourceReferenceId?: number | null;
+  status: PendingStampGrantStatus;
+  createdAt: Date;
+  redeemedAt?: Date | null;
+  business?: IBusiness;
+}
+
 // DTOs para crear campañas y premios
 export interface ICreateScratchCampaignDto {
   name: string;
@@ -1916,6 +2105,7 @@ export interface IScratchPrizeRedemption {
   scratchPrize: string;
   client: IClient;
   business: IBusiness;
+  createdAt?: Date;
 }
 // Raffle
 export interface IRaffle {
@@ -1985,6 +2175,7 @@ export interface IRafflePrizeRedemption {
   rafflePrize: IRafflePrize;
   client: IClient;
   business: IBusiness;
+  createdAt?: Date;
 }
 export interface ICreateRaffleDto {
   name: string;
@@ -2014,4 +2205,63 @@ export interface IUpdateRafflePrizeDto extends Partial<ICreateRafflePrizeDto> {
 
 export interface IUpdateRaffleDto extends Partial<ICreateRaffleDto> {
   id: number;
+}
+
+// ======= FUDO INTEGRATION =======
+
+export enum FudoSaleGrantReason {
+  GRANTED = 'granted',
+  BELOW_MINIMUM = 'below_minimum',
+  CLIENT_NOT_FOUND = 'client_not_found',
+  NO_CUSTOMER = 'no_customer',
+}
+
+export interface IFudoConfig {
+  id: number;
+  businessId: number;
+  enabled: boolean;
+  lastSyncAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IFudoCustomerMapping {
+  id: number;
+  businessId: number;
+  clientId: number;
+  fudoCustomerId: string;
+  syncedAt: Date;
+}
+
+export interface IFudoSaleProductSnapshot {
+  fudoProductId: string;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  category: string | null;
+}
+
+export interface IFudoProcessedSale {
+  id: number;
+  businessId: number;
+  fudoSaleId: string;
+  fudoCustomerEmail: string | null;
+  saleTotal: number;
+  stampGranted: boolean;
+  stampGrantReason: FudoSaleGrantReason | null;
+  clientCardId: number | null;
+  productsSnapshot: IFudoSaleProductSnapshot[] | null;
+  processedAt: Date;
+}
+
+export interface ICreateFudoConfigDto {
+  apiKey: string;
+  apiSecret: string;
+}
+
+export interface IFudoSyncResult {
+  synced: number;
+  skipped: number;
+  alreadyInFudo: number;
+  errors: number;
 }
