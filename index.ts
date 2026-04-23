@@ -2214,6 +2214,8 @@ export enum FudoSaleGrantReason {
   BELOW_MINIMUM = 'below_minimum',
   CLIENT_NOT_FOUND = 'client_not_found',
   NO_CUSTOMER = 'no_customer',
+  NO_MATCHING_PRODUCT = 'no_matching_product',
+  NO_MATCHING_TIER = 'no_matching_tier',
 }
 
 export interface IFudoConfig {
@@ -2252,6 +2254,16 @@ export interface IFudoProcessedSale {
   clientCardId: number | null;
   productsSnapshot: IFudoSaleProductSnapshot[] | null;
   processedAt: Date;
+  stampsGranted: number;
+  baseStamps: number;
+  multiplierApplied: IAppliedMultiplierSnapshot | null;
+}
+
+export interface IAppliedMultiplierSnapshot {
+  id: string;
+  kind: StampMultiplierKind;
+  value: number;
+  label: string | null;
 }
 
 export interface ICreateFudoConfigDto {
@@ -2264,4 +2276,66 @@ export interface IFudoSyncResult {
   skipped: number;
   alreadyInFudo: number;
   errors: number;
+}
+
+// ======= STAMP GRANTING RULES =======
+
+export enum StampBaseMode {
+  SIMPLE = 'SIMPLE',
+  AMOUNT_TIERS = 'AMOUNT_TIERS',
+  PRODUCT_BASED = 'PRODUCT_BASED',
+}
+
+export enum StampProductMatchType {
+  CATEGORY = 'CATEGORY',
+  PRODUCT = 'PRODUCT',
+}
+
+export enum StampMultiplierKind {
+  MULTIPLIER = 'MULTIPLIER',
+  BONUS = 'BONUS',
+}
+
+export interface IStampAmountTier {
+  minAmount: number;
+  stamps: number;
+}
+
+export interface IStampProductRule {
+  matchType: StampProductMatchType;
+  value: string;
+  stamps: number;
+}
+
+export interface IStampMultiplierRule {
+  id: string;
+  kind: StampMultiplierKind;
+  value: number;
+  days: number[];
+  from: string;
+  to: string;
+  label?: string | null;
+  enabled: boolean;
+}
+
+export interface IStampGrantingRules {
+  baseMode: StampBaseMode;
+  simpleMinimumAmount: number;
+  amountTiers: IStampAmountTier[];
+  productRules: IStampProductRule[];
+  multiplierRules: IStampMultiplierRule[];
+}
+
+export type IUpsertStampGrantingRulesDto = IStampGrantingRules;
+
+export interface IFudoProductOption {
+  id: string;
+  name: string;
+  category: string | null;
+  deleted?: boolean;
+}
+
+export interface IFudoCategoryOption {
+  name: string;
+  productCount: number;
 }
