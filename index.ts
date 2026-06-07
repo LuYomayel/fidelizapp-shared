@@ -2214,6 +2214,8 @@ export enum FudoSaleGrantReason {
   BELOW_MINIMUM = 'below_minimum',
   CLIENT_NOT_FOUND = 'client_not_found',
   NO_CUSTOMER = 'no_customer',
+  NO_MATCHING_PRODUCT = 'no_matching_product',
+  NO_MATCHING_TIER = 'no_matching_tier',
 }
 
 export interface IFudoConfig {
@@ -2252,6 +2254,16 @@ export interface IFudoProcessedSale {
   clientCardId: number | null;
   productsSnapshot: IFudoSaleProductSnapshot[] | null;
   processedAt: Date;
+  stampsGranted: number;
+  baseStamps: number;
+  multiplierApplied: IAppliedMultiplierSnapshot | null;
+}
+
+export interface IAppliedMultiplierSnapshot {
+  id: string;
+  kind: StampMultiplierKind;
+  value: number;
+  label: string | null;
 }
 
 export interface ICreateFudoConfigDto {
@@ -2264,4 +2276,197 @@ export interface IFudoSyncResult {
   skipped: number;
   alreadyInFudo: number;
   errors: number;
+}
+
+// ======= STAMP GRANTING RULES =======
+
+export enum StampBaseMode {
+  SIMPLE = 'SIMPLE',
+  AMOUNT_TIERS = 'AMOUNT_TIERS',
+  PRODUCT_BASED = 'PRODUCT_BASED',
+}
+
+export enum StampProductMatchType {
+  CATEGORY = 'CATEGORY',
+  PRODUCT = 'PRODUCT',
+}
+
+export enum StampMultiplierKind {
+  MULTIPLIER = 'MULTIPLIER',
+  BONUS = 'BONUS',
+}
+
+export interface IStampAmountTier {
+  minAmount: number;
+  stamps: number;
+}
+
+export interface IStampProductRule {
+  matchType: StampProductMatchType;
+  value: string;
+  stamps: number;
+}
+
+export interface IStampMultiplierRule {
+  id: string;
+  kind: StampMultiplierKind;
+  value: number;
+  days: number[];
+  from: string;
+  to: string;
+  label?: string | null;
+  enabled: boolean;
+}
+
+export interface IStampGrantingRules {
+  baseMode: StampBaseMode;
+  simpleMinimumAmount: number;
+  amountTiers: IStampAmountTier[];
+  productRules: IStampProductRule[];
+  multiplierRules: IStampMultiplierRule[];
+}
+
+export type IUpsertStampGrantingRulesDto = IStampGrantingRules;
+
+export interface IFudoProductOption {
+  id: string;
+  name: string;
+  category: string | null;
+  deleted?: boolean;
+}
+
+export interface IFudoCategoryOption {
+  name: string;
+  productCount: number;
+}
+
+// ========== APPOINTMENTS / TURNOS ==========
+
+export enum AppointmentStatus {
+  CONFIRMED = "confirmed",
+  CANCELLED = "cancelled",
+}
+
+export enum AppointmentCancelledBy {
+  CLIENT = "client",
+  BUSINESS = "business",
+}
+
+export const APPOINTMENT_DURATION_OPTIONS = [15, 30, 45, 60, 90, 120] as const;
+export type AppointmentDurationMinutes =
+  (typeof APPOINTMENT_DURATION_OPTIONS)[number];
+
+export interface IBusinessBookingSchedule {
+  id: number;
+  weekday: number; // 0 (Sunday) - 6 (Saturday)
+  startTime: string; // 'HH:mm'
+  endTime: string; // 'HH:mm'
+}
+
+export interface IBusinessBookingBlock {
+  id: number;
+  startDate: string; // 'YYYY-MM-DD'
+  endDate: string; // 'YYYY-MM-DD'
+  startTime?: string | null; // 'HH:mm' or null for full day
+  endTime?: string | null;
+  reason?: string | null;
+}
+
+export interface IBusinessBookingConfig {
+  id: number;
+  businessId: number;
+  enabled: boolean;
+  slotDurationMinutes: number;
+  timezone: string;
+  publicToken: string;
+  schedules: IBusinessBookingSchedule[];
+  blocks: IBusinessBookingBlock[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IUpsertBookingScheduleDto {
+  weekday: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface IUpsertBookingBlockDto {
+  startDate: string;
+  endDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  reason?: string | null;
+}
+
+export interface IUpdateBookingConfigDto {
+  enabled?: boolean;
+  slotDurationMinutes?: AppointmentDurationMinutes;
+  timezone?: string;
+  schedules?: IUpsertBookingScheduleDto[];
+  blocks?: IUpsertBookingBlockDto[];
+}
+
+export interface IPublicBookingBusinessInfo {
+  businessName: string;
+  logoPath?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  slotDurationMinutes: number;
+  timezone: string;
+}
+
+export interface IAvailableSlot {
+  startAt: string; // ISO
+  endAt: string; // ISO
+}
+
+export interface IAppointmentClientInfo {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface IAppointmentBusinessInfo {
+  id: number;
+  businessName: string;
+  logoPath?: string | null;
+}
+
+export interface IAppointment {
+  id: number;
+  businessId: number;
+  clientId: number;
+  startAt: string; // ISO
+  endAt: string; // ISO
+  status: AppointmentStatus;
+  cancelledAt?: string | null;
+  cancelledBy?: AppointmentCancelledBy | null;
+  cancellationReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  client?: IAppointmentClientInfo;
+  business?: IAppointmentBusinessInfo;
+}
+
+export interface ICreateAppointmentPublicDto {
+  publicToken: string;
+  startAt: string; // ISO
+}
+
+export interface ICancelAppointmentDto {
+  reason?: string;
+}
+
+export type IAppointmentFilters = BaseFilters & {
+  status?: AppointmentStatus;
+};
+
+export interface IAppointmentStats {
+  todayTotal: number;
+  todayConfirmed: number;
+  todayCancelled: number;
+  weekTotal: number;
+  upcomingTotal: number;
 }
