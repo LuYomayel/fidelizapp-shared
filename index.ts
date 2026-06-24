@@ -973,6 +973,30 @@ export interface ICreateBusinessDto {
   cardTheme?: string;
 }
 
+/** Recompensa inicial que se crea junto con el negocio en register-complete. */
+export interface IRegisterCompleteRewardDto {
+  name: string;
+  description: string;
+  stampsCost: number;
+  type?: RewardType;
+  typeDescription?: string;
+  stock?: number;
+  expirationDate?: string;
+  oneTimeUse: boolean;
+}
+
+/**
+ * Payload para crear el negocio en UN solo insert al completar el registro
+ * (sin pre-registro/draft previo). El wizard junta todo en localStorage y lo
+ * manda acá en el paso 5 (path GRATIS).
+ */
+export interface IRegisterCompleteDto extends ICreateBusinessDto {
+  logoKey?: string;
+  reward: IRegisterCompleteRewardDto;
+  subscriptionPlanId: number;
+  promotionalCode?: string;
+}
+
 export type IUpdateBusinessDto = Partial<
   ICreateBusinessDto & {
     mustChangePassword?: boolean;
