@@ -259,6 +259,7 @@ export interface IBusiness {
   mustChangePassword?: boolean; // Si debe cambiar la contraseña
   status?: BusinessStatus;
   preRegistrationToken?: string;
+  nfcToken?: string; // Token opaco (UUID) para el tag NFC del negocio (sticker)
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -505,6 +506,7 @@ export interface IStamp {
   updatedAt?: Date;
   usedAt?: Date;
   usedBy?: number | string | IClient; // ID del cliente que lo usó
+  nfcArmed?: boolean; // true = ventana armada para reclamo por NFC (no es un sello QR)
   business?: IBusiness; // Relación con el negocio
   client?: IClient; // Relación con el cliente
 }
@@ -1088,6 +1090,11 @@ export interface IUpsertBirthdayRewardConfigDto {
 
 export interface IRedeemStampDto {
   code: string;
+}
+
+export interface INfcClaimDto {
+  businessToken: string; // token del tag NFC (query param `b`)
+  loc?: string; // etiqueta libre de ubicación (opcional, p.ej. "barra", "mesa3")
 }
 
 export interface IStampSummaryDto {
