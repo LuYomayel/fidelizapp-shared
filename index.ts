@@ -575,6 +575,8 @@ export interface IBusinessClient {
   lastStampDate: Date | null;
   totalRedemptions: number;
   createdAt: Date;
+  /** true si el cliente tiene la tarjeta agregada en Apple/Google Wallet */
+  walletInstalled: boolean;
 }
 export interface IStampRedemption {
   id?: number | string;
