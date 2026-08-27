@@ -1789,6 +1789,7 @@ export interface IProcessPaymentDto {
   promotionalCode?: string; // ID del código promocional (opcional)
   preToken?: string; // Token de pre-registro (opcional)
   isUpgrade?: boolean; // Indica si es una actualización de plan
+  deviceId?: string; // MP_DEVICE_SESSION_ID del SDK de MP — viaja como X-meli-session-id al crear el preapproval (motor antifraude)
 }
 
 export interface IUpdateMpPreapprovalDto {
