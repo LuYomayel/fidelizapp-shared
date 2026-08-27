@@ -3,9 +3,8 @@
 
 // ======= ENUMS =======
 export enum BusinessSize {
-  SMALL = "1-5 sucursales",
-  MEDIUM = "5-10 sucursales",
-  LARGE = "+10 sucursales",
+  SINGLE = "1 sucursal",
+  MULTIPLE = "2 sucursales o más",
 }
 
 export enum BusinessType {
