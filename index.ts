@@ -162,6 +162,11 @@ export interface BusinessUser extends BaseUser {
   provider: "email" | "google";
   picture?: string;
   subscriptionTier?: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Ausentes en tokens viejos = se trata como Dueño.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
 }
 
 export interface PlatformAdminUser extends BaseUser {
@@ -195,6 +200,11 @@ export interface BusinessJwtPayload extends BaseJwtPayload {
   provider: "email" | "google";
   emailVerified: boolean;
   subscriptionTier: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Opcionales para compatibilidad con tokens viejos.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
@@ -228,6 +238,126 @@ export interface ClientRequest {
 
 export interface BusinessRequest {
   user: BusinessUser;
+}
+
+// ======= EQUIPO: USUARIOS Y PERMISOS DEL NEGOCIO (Fase 1 sucursales) =======
+// Cada negocio puede tener varias personas con acceso, cada una con su propio
+// mail/contraseña, un rol fijo y excepciones por persona. La cuenta original
+// del negocio es la persona "Dueño". El JWT sigue teniendo sub=businessId; se
+// suman businessUserId/role/permissions.
+
+export enum BusinessUserRole {
+  OWNER = "owner",
+  MANAGER = "manager",
+  EMPLOYEE = "employee",
+}
+
+export enum BusinessUserStatus {
+  INVITED = "invited", // invitación enviada, todavía no eligió contraseña
+  ACTIVE = "active",
+  INACTIVE = "inactive", // dado de baja (nunca se borra: RN-07)
+}
+
+export enum BusinessPermission {
+  STAMPS_GIVE = "stamps.give", // Dar sellos y generar códigos
+  REDEMPTIONS_DELIVER = "redemptions.deliver", // Entregar canjes
+  CLIENTS_VIEW = "clients.view", // Ver la lista de clientes (mail, teléfono, cumpleaños)
+  REWARDS_MANAGE = "rewards.manage", // Crear y editar recompensas
+  STATS_VIEW = "stats.view", // Ver estadísticas
+  PROGRAM_CONFIGURE = "program.configure", // Reglas de sellos, wallet, turnos, Fudo
+  TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Dueño)
+  SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Dueño)
+  BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Dueño, Fase 2)
+}
+
+export const ALL_BUSINESS_PERMISSIONS: readonly BusinessPermission[] =
+  Object.values(BusinessPermission);
+
+/** Permisos exclusivos del Dueño: no se pueden otorgar por "Personalizar". */
+export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
+  BusinessPermission.TEAM_MANAGE,
+  BusinessPermission.SUBSCRIPTION_MANAGE,
+  BusinessPermission.BRANCHES_MANAGE,
+];
+
+/** Permisos por defecto de cada rol (matriz de la propuesta). */
+export const ROLE_DEFAULT_PERMISSIONS: Readonly<
+  Record<BusinessUserRole, readonly BusinessPermission[]>
+> = {
+  [BusinessUserRole.OWNER]: ALL_BUSINESS_PERMISSIONS,
+  [BusinessUserRole.MANAGER]: [
+    BusinessPermission.STAMPS_GIVE,
+    BusinessPermission.REDEMPTIONS_DELIVER,
+    BusinessPermission.CLIENTS_VIEW,
+    BusinessPermission.REWARDS_MANAGE,
+    BusinessPermission.STATS_VIEW,
+    BusinessPermission.PROGRAM_CONFIGURE,
+  ],
+  [BusinessUserRole.EMPLOYEE]: [
+    BusinessPermission.STAMPS_GIVE,
+    BusinessPermission.REDEMPTIONS_DELIVER,
+  ],
+};
+
+/**
+ * Permisos efectivos de una persona: los del rol, salvo que tenga excepciones
+ * (`customPermissions`, RN-04). El Dueño siempre tiene todo; los exclusivos
+ * del Dueño nunca se otorgan por excepción.
+ */
+export function resolveBusinessPermissions(
+  role: BusinessUserRole,
+  customPermissions?: readonly BusinessPermission[] | null,
+): BusinessPermission[] {
+  if (role === BusinessUserRole.OWNER) return [...ALL_BUSINESS_PERMISSIONS];
+  const base = customPermissions ?? ROLE_DEFAULT_PERMISSIONS[role];
+  return base.filter((p) => !OWNER_ONLY_PERMISSIONS.includes(p));
+}
+
+export interface IBusinessUser {
+  id: number;
+  businessId: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: BusinessUserRole;
+  status: BusinessUserStatus;
+  customPermissions: BusinessPermission[] | null; // null = usa los del rol
+  permissions: BusinessPermission[]; // efectivos (calculados)
+  invitedAt: Date | null;
+  inviteExpiresAt: Date | null;
+  acceptedAt: Date | null;
+  lastLoginAt: Date | null;
+  isSelf?: boolean; // true para la persona que está logueada
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IInviteBusinessUserDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: BusinessUserRole.MANAGER | BusinessUserRole.EMPLOYEE;
+  customPermissions?: BusinessPermission[] | null;
+}
+
+export interface IUpdateBusinessUserDto {
+  firstName?: string;
+  lastName?: string;
+  role?: BusinessUserRole;
+  customPermissions?: BusinessPermission[] | null; // null = volver a los del rol
+}
+
+export interface IAcceptBusinessInvitationDto {
+  password: string;
+}
+
+export interface IBusinessInvitationPreview {
+  businessName: string;
+  email: string;
+  firstName: string;
+  role: BusinessUserRole;
+  expired: boolean;
+  alreadyAccepted: boolean;
 }
 
 // ======= INTERFACES BÁSICAS =======
