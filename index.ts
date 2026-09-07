@@ -260,6 +260,7 @@ export interface IBusiness {
   status?: BusinessStatus;
   preRegistrationToken?: string;
   nfcToken?: string; // Token opaco (UUID) para el tag NFC del negocio (sticker)
+  nfcContinuousDailyLimit?: number | null; // Tope de sellos NFC (modo continuo) por cliente/día calendario. null = default global, 0 = sin tope
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -1092,6 +1093,17 @@ export interface IUpsertBirthdayRewardConfigDto {
 
 export interface IRedeemStampDto {
   code: string;
+}
+
+// Configuración NFC del negocio (GET/PUT /business/stamps/nfc-settings)
+export interface INfcSettings {
+  continuousDailyLimit: number | null; // valor guardado (null = usa el default global)
+  effectiveDailyLimit: number; // el que aplica hoy (0 = sin tope)
+  defaultDailyLimit: number; // default global del entorno
+}
+
+export interface IUpdateNfcSettingsDto {
+  continuousDailyLimit?: number | null;
 }
 
 export interface INfcClaimDto {
