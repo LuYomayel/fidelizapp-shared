@@ -167,6 +167,8 @@ export interface BusinessUser extends BaseUser {
   role?: BusinessUserRole;
   permissions?: BusinessPermission[];
   displayName?: string;
+  /** Sucursales donde puede operar. null/ausente = todas (Dueño o token viejo). */
+  branchIds?: number[] | null;
 }
 
 export interface PlatformAdminUser extends BaseUser {
@@ -323,6 +325,7 @@ export interface IBusinessUser {
   status: BusinessUserStatus;
   customPermissions: BusinessPermission[] | null; // null = usa los del rol
   permissions: BusinessPermission[]; // efectivos (calculados)
+  branchIds: number[] | null; // sucursales donde trabaja; null = todas (siempre el Dueño, RN-03)
   invitedAt: Date | null;
   inviteExpiresAt: Date | null;
   acceptedAt: Date | null;
@@ -338,6 +341,7 @@ export interface IInviteBusinessUserDto {
   lastName: string;
   role: BusinessUserRole.MANAGER | BusinessUserRole.EMPLOYEE;
   customPermissions?: BusinessPermission[] | null;
+  branchIds?: number[] | null;
 }
 
 export interface IUpdateBusinessUserDto {
@@ -345,6 +349,7 @@ export interface IUpdateBusinessUserDto {
   lastName?: string;
   role?: BusinessUserRole;
   customPermissions?: BusinessPermission[] | null; // null = volver a los del rol
+  branchIds?: number[] | null;
 }
 
 export interface IAcceptBusinessInvitationDto {
@@ -445,6 +450,72 @@ export const SUBSCRIPTION_TIERS = {
   PREMIUM: "premium", // Plan premium
   ENTERPRISE: "enterprise", // Plan empresarial
 } as const;
+
+// ======= SUCURSALES (Fase 2) =======
+// Regla que ordena todo: lo que ve el CLIENTE es de la marca, lo que OPERA el
+// negocio es de la sucursal. El cliente tiene una sola tarjeta, un solo pase de
+// wallet y un solo saldo de sellos aunque entre a cualquier local; se guarda en
+// qué sucursal pasó cada sello y cada canje, pero el saldo es uno solo (RN-11).
+
+export interface IBranch {
+  id: number;
+  businessId: number;
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  isMain: boolean; // la "Sucursal principal" que hereda el historial del negocio
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICreateBranchDto {
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  /** El front lo manda en true recién cuando el usuario aceptó el cargo extra (CP-16). */
+  acceptExtraCharge?: boolean;
+}
+
+export interface IUpdateBranchDto {
+  name?: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+}
+
+/** Cuántas sucursales incluye cada plan sin costo adicional (RN-18). */
+export const BRANCHES_INCLUDED_BY_TIER: Readonly<Record<string, number>> = {
+  [SUBSCRIPTION_TIERS.PREMIUM]: 2,
+  [SUBSCRIPTION_TIERS.BETA]: 2,
+  [SUBSCRIPTION_TIERS.ENTERPRISE]: 2,
+};
+
+/** Sucursales incluidas para un tier. Los planes menores no tienen sucursales (RN-20). */
+export function branchesIncludedForTier(tier?: string): number {
+  if (!tier) return 1;
+  return BRANCHES_INCLUDED_BY_TIER[tier] ?? 1;
+}
+
+/** Estado del cupo de sucursales, para avisar el cargo ANTES de crear (CP-16). */
+export interface IBranchQuota {
+  used: number; // sucursales activas hoy
+  included: number; // cuántas entran en el plan
+  canCreateWithoutCharge: boolean;
+  requiresExtraCharge: boolean; // crear la próxima sale extra
+  extraMonthlyPrice: number | null; // null = precio todavía sin definir
+  currency: string;
+}
+
+export interface IBranchesResponse {
+  branches: IBranch[];
+  quota: IBranchQuota;
+}
 
 export enum SubscriptionStatus {
   ACTIVE = "active",
