@@ -244,13 +244,17 @@ export interface BusinessRequest {
 
 // ======= EQUIPO: USUARIOS Y PERMISOS DEL NEGOCIO (Fase 1 sucursales) =======
 // Cada negocio puede tener varias personas con acceso, cada una con su propio
-// mail/contraseña, un rol fijo y excepciones por persona. La cuenta original
-// del negocio es la persona "Dueño". El JWT sigue teniendo sub=businessId; se
-// suman businessUserId/role/permissions.
+// mail/contraseña y sus propios permisos. La cuenta original del negocio es la
+// persona "Dueño". El JWT sigue teniendo sub=businessId; se suman
+// businessUserId/role/permissions.
+//
+// Acta del 31/08/2026: hay UNA sola figura administrativa (Dueño/admin) y el
+// resto son empleados a los que el Dueño les marca qué pueden hacer. No existe
+// un rol intermedio "Encargado": un encargado es un empleado con más permisos
+// tildados.
 
 export enum BusinessUserRole {
   OWNER = "owner",
-  MANAGER = "manager",
   EMPLOYEE = "employee",
 }
 
@@ -282,19 +286,12 @@ export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
   BusinessPermission.BRANCHES_MANAGE,
 ];
 
-/** Permisos por defecto de cada rol (matriz de la propuesta). */
+/** Permisos con los que arranca cada rol. */
 export const ROLE_DEFAULT_PERMISSIONS: Readonly<
   Record<BusinessUserRole, readonly BusinessPermission[]>
 > = {
   [BusinessUserRole.OWNER]: ALL_BUSINESS_PERMISSIONS,
-  [BusinessUserRole.MANAGER]: [
-    BusinessPermission.STAMPS_GIVE,
-    BusinessPermission.REDEMPTIONS_DELIVER,
-    BusinessPermission.CLIENTS_VIEW,
-    BusinessPermission.REWARDS_MANAGE,
-    BusinessPermission.STATS_VIEW,
-    BusinessPermission.PROGRAM_CONFIGURE,
-  ],
+  // Con lo que arranca un empleado nuevo; el Dueño le tilda el resto.
   [BusinessUserRole.EMPLOYEE]: [
     BusinessPermission.STAMPS_GIVE,
     BusinessPermission.REDEMPTIONS_DELIVER,
@@ -339,7 +336,7 @@ export interface IInviteBusinessUserDto {
   email: string;
   firstName: string;
   lastName: string;
-  role: BusinessUserRole.MANAGER | BusinessUserRole.EMPLOYEE;
+  role?: BusinessUserRole.EMPLOYEE; // única opción; queda por compatibilidad
   customPermissions?: BusinessPermission[] | null;
   branchIds?: number[] | null;
 }
@@ -807,6 +804,7 @@ export interface IReward {
   isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
   rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
   branchId?: number | null; // null = de la marca (todos los locales); X = solo en esa sucursal (RN-14)
+  branchName?: string | null; // nombre de esa sucursal, para avisarle al cliente antes de canjear
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
