@@ -806,6 +806,7 @@ export interface IReward {
   oneTimeUse: boolean;
   isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
   rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
+  branchId?: number | null; // null = de la marca (todos los locales); X = solo en esa sucursal (RN-14)
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
