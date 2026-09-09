@@ -745,6 +745,11 @@ export interface IClientCard {
   redemptions?: IStampRedemption[];
   lastReviewedAt?: Date;
   hiddenAt?: Date | null;
+  /**
+   * Sucursal donde se dio de alta esta tarjeta (join por QR de local o primer
+   * sello). null = no se sabe / marca entera (tarjetas de antes de Fase 3).
+   */
+  branchId?: number | null;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -1046,6 +1051,24 @@ export type RewardsRedeemedResult = {
   previousMonth: number;
   growth: number;
 };
+
+/** Una fila de la comparativa entre sucursales (Fase 3). */
+export interface IBranchComparisonRow {
+  branchId: number;
+  branchName: string;
+  isMain: boolean;
+  stampsIssuedMonth: number;
+  stampsIssuedTotal: number;
+  activeClientsMonth: number;
+  activeClientsTotal: number;
+  rewardsRedeemedMonth: number;
+  rewardsRedeemedTotal: number;
+}
+
+export interface IBranchComparisonResult {
+  period: { current: Date; previous: Date };
+  branches: IBranchComparisonRow[];
+}
 
 export type ClientRetentionResult = {
   rate: number;
@@ -1749,11 +1772,20 @@ export interface IBusinessQRData {
   businessName: string;
   qrCode: string; // Base64 del QR generado
   qrUrl: string; // URL que contiene el QR
+  /** Sucursal para la que se generó (sticker físico de ese local). null = QR general de la marca. */
+  branchId?: number | null;
+  branchName?: string | null;
 }
 
 // Nueva interfaz para solicitud de asociación con negocio
 export interface IJoinBusinessDto {
   businessId: number;
+  /**
+   * Sucursal impresa en el QR que el cliente escaneó (CP de Fase 3). La
+   * decide el negocio al generar el QR, no la elige el cliente en pantalla —
+   * mismo espíritu que RN-13, análogo al token estático del tag NFC.
+   */
+  branchId?: number;
 }
 
 // Nueva interfaz para respuesta de asociación con negocio
