@@ -162,6 +162,13 @@ export interface BusinessUser extends BaseUser {
   provider: "email" | "google";
   picture?: string;
   subscriptionTier?: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Ausentes en tokens viejos = se trata como Dueño.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
+  /** Sucursales donde puede operar. null/ausente = todas (Dueño o token viejo). */
+  branchIds?: number[] | null;
 }
 
 export interface PlatformAdminUser extends BaseUser {
@@ -195,6 +202,11 @@ export interface BusinessJwtPayload extends BaseJwtPayload {
   provider: "email" | "google";
   emailVerified: boolean;
   subscriptionTier: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Opcionales para compatibilidad con tokens viejos.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
@@ -230,6 +242,127 @@ export interface BusinessRequest {
   user: BusinessUser;
 }
 
+// ======= EQUIPO: USUARIOS Y PERMISOS DEL NEGOCIO (Fase 1 sucursales) =======
+// Cada negocio puede tener varias personas con acceso, cada una con su propio
+// mail/contraseña y sus propios permisos. La cuenta original del negocio es la
+// persona "Dueño". El JWT sigue teniendo sub=businessId; se suman
+// businessUserId/role/permissions.
+//
+// Acta del 31/08/2026: hay UNA sola figura administrativa (Dueño/admin) y el
+// resto son empleados a los que el Dueño les marca qué pueden hacer. No existe
+// un rol intermedio "Encargado": un encargado es un empleado con más permisos
+// tildados.
+
+export enum BusinessUserRole {
+  OWNER = "owner",
+  EMPLOYEE = "employee",
+}
+
+export enum BusinessUserStatus {
+  INVITED = "invited", // invitación enviada, todavía no eligió contraseña
+  ACTIVE = "active",
+  INACTIVE = "inactive", // dado de baja (nunca se borra: RN-07)
+}
+
+export enum BusinessPermission {
+  STAMPS_GIVE = "stamps.give", // Dar sellos y generar códigos
+  REDEMPTIONS_DELIVER = "redemptions.deliver", // Entregar canjes
+  CLIENTS_VIEW = "clients.view", // Ver la lista de clientes (mail, teléfono, cumpleaños)
+  REWARDS_MANAGE = "rewards.manage", // Crear y editar recompensas
+  STATS_VIEW = "stats.view", // Ver estadísticas
+  PROGRAM_CONFIGURE = "program.configure", // Reglas de sellos, wallet, turnos, Fudo
+  TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Dueño)
+  SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Dueño)
+  BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Dueño, Fase 2)
+  NFC_LIMIT_CONFIGURE = "nfc.limit.configure", // Cambiar el tope de sellos NFC por cliente y por día de su sucursal
+}
+
+export const ALL_BUSINESS_PERMISSIONS: readonly BusinessPermission[] =
+  Object.values(BusinessPermission);
+
+/** Permisos exclusivos del Dueño: no se pueden otorgar por "Personalizar". */
+export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
+  BusinessPermission.TEAM_MANAGE,
+  BusinessPermission.SUBSCRIPTION_MANAGE,
+  BusinessPermission.BRANCHES_MANAGE,
+];
+
+/** Permisos con los que arranca cada rol. */
+export const ROLE_DEFAULT_PERMISSIONS: Readonly<
+  Record<BusinessUserRole, readonly BusinessPermission[]>
+> = {
+  [BusinessUserRole.OWNER]: ALL_BUSINESS_PERMISSIONS,
+  // Con lo que arranca un empleado nuevo; el Dueño le tilda el resto.
+  [BusinessUserRole.EMPLOYEE]: [
+    BusinessPermission.STAMPS_GIVE,
+    BusinessPermission.REDEMPTIONS_DELIVER,
+  ],
+};
+
+/**
+ * Permisos efectivos de una persona: los del rol, salvo que tenga excepciones
+ * (`customPermissions`, RN-04). El Dueño siempre tiene todo; los exclusivos
+ * del Dueño nunca se otorgan por excepción.
+ */
+export function resolveBusinessPermissions(
+  role: BusinessUserRole,
+  customPermissions?: readonly BusinessPermission[] | null,
+): BusinessPermission[] {
+  if (role === BusinessUserRole.OWNER) return [...ALL_BUSINESS_PERMISSIONS];
+  const base = customPermissions ?? ROLE_DEFAULT_PERMISSIONS[role];
+  return base.filter((p) => !OWNER_ONLY_PERMISSIONS.includes(p));
+}
+
+export interface IBusinessUser {
+  id: number;
+  businessId: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: BusinessUserRole;
+  status: BusinessUserStatus;
+  customPermissions: BusinessPermission[] | null; // null = usa los del rol
+  permissions: BusinessPermission[]; // efectivos (calculados)
+  branchIds: number[] | null; // sucursales donde trabaja; null = todas (siempre el Dueño, RN-03)
+  invitedAt: Date | null;
+  inviteExpiresAt: Date | null;
+  acceptedAt: Date | null;
+  lastLoginAt: Date | null;
+  isSelf?: boolean; // true para la persona que está logueada
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IInviteBusinessUserDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role?: BusinessUserRole.EMPLOYEE; // única opción; queda por compatibilidad
+  customPermissions?: BusinessPermission[] | null;
+  branchIds?: number[] | null;
+}
+
+export interface IUpdateBusinessUserDto {
+  firstName?: string;
+  lastName?: string;
+  role?: BusinessUserRole;
+  customPermissions?: BusinessPermission[] | null; // null = volver a los del rol
+  branchIds?: number[] | null;
+}
+
+export interface IAcceptBusinessInvitationDto {
+  password: string;
+}
+
+export interface IBusinessInvitationPreview {
+  businessName: string;
+  email: string;
+  firstName: string;
+  role: BusinessUserRole;
+  expired: boolean;
+  alreadyAccepted: boolean;
+}
+
 // ======= INTERFACES BÁSICAS =======
 export interface IBusiness {
   id: number | string;
@@ -260,6 +393,7 @@ export interface IBusiness {
   status?: BusinessStatus;
   preRegistrationToken?: string;
   nfcToken?: string; // Token opaco (UUID) para el tag NFC del negocio (sticker)
+  nfcContinuousDailyLimit?: number | null; // Tope de sellos NFC (modo continuo) por cliente/día calendario. null = default global, 0 = sin tope
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -315,6 +449,72 @@ export const SUBSCRIPTION_TIERS = {
   PREMIUM: "premium", // Plan premium
   ENTERPRISE: "enterprise", // Plan empresarial
 } as const;
+
+// ======= SUCURSALES (Fase 2) =======
+// Regla que ordena todo: lo que ve el CLIENTE es de la marca, lo que OPERA el
+// negocio es de la sucursal. El cliente tiene una sola tarjeta, un solo pase de
+// wallet y un solo saldo de sellos aunque entre a cualquier local; se guarda en
+// qué sucursal pasó cada sello y cada canje, pero el saldo es uno solo (RN-11).
+
+export interface IBranch {
+  id: number;
+  businessId: number;
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  isMain: boolean; // la "Sucursal principal" que hereda el historial del negocio
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICreateBranchDto {
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  /** El front lo manda en true recién cuando el usuario aceptó el cargo extra (CP-16). */
+  acceptExtraCharge?: boolean;
+}
+
+export interface IUpdateBranchDto {
+  name?: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+}
+
+/** Cuántas sucursales incluye cada plan sin costo adicional (RN-18). */
+export const BRANCHES_INCLUDED_BY_TIER: Readonly<Record<string, number>> = {
+  [SUBSCRIPTION_TIERS.PREMIUM]: 2,
+  [SUBSCRIPTION_TIERS.BETA]: 2,
+  [SUBSCRIPTION_TIERS.ENTERPRISE]: 2,
+};
+
+/** Sucursales incluidas para un tier. Los planes menores no tienen sucursales (RN-20). */
+export function branchesIncludedForTier(tier?: string): number {
+  if (!tier) return 1;
+  return BRANCHES_INCLUDED_BY_TIER[tier] ?? 1;
+}
+
+/** Estado del cupo de sucursales, para avisar el cargo ANTES de crear (CP-16). */
+export interface IBranchQuota {
+  used: number; // sucursales activas hoy
+  included: number; // cuántas entran en el plan
+  canCreateWithoutCharge: boolean;
+  requiresExtraCharge: boolean; // crear la próxima sale extra
+  extraMonthlyPrice: number | null; // null = precio todavía sin definir
+  currency: string;
+}
+
+export interface IBranchesResponse {
+  branches: IBranch[];
+  quota: IBranchQuota;
+}
 
 export enum SubscriptionStatus {
   ACTIVE = "active",
@@ -546,6 +746,11 @@ export interface IClientCard {
   redemptions?: IStampRedemption[];
   lastReviewedAt?: Date;
   hiddenAt?: Date | null;
+  /**
+   * Sucursal donde se dio de alta esta tarjeta (join por QR de local o primer
+   * sello). null = no se sabe / marca entera (tarjetas de antes de Fase 3).
+   */
+  branchId?: number | null;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -605,6 +810,8 @@ export interface IReward {
   oneTimeUse: boolean;
   isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
   rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
+  branchId?: number | null; // null = de la marca (todos los locales); X = solo en esa sucursal (RN-14)
+  branchName?: string | null; // nombre de esa sucursal, para avisarle al cliente antes de canjear
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -845,6 +1052,24 @@ export type RewardsRedeemedResult = {
   previousMonth: number;
   growth: number;
 };
+
+/** Una fila de la comparativa entre sucursales (Fase 3). */
+export interface IBranchComparisonRow {
+  branchId: number;
+  branchName: string;
+  isMain: boolean;
+  stampsIssuedMonth: number;
+  stampsIssuedTotal: number;
+  activeClientsMonth: number;
+  activeClientsTotal: number;
+  rewardsRedeemedMonth: number;
+  rewardsRedeemedTotal: number;
+}
+
+export interface IBranchComparisonResult {
+  period: { current: Date; previous: Date };
+  branches: IBranchComparisonRow[];
+}
 
 export type ClientRetentionResult = {
   rate: number;
@@ -1092,6 +1317,21 @@ export interface IUpsertBirthdayRewardConfigDto {
 
 export interface IRedeemStampDto {
   code: string;
+}
+
+// Configuración NFC de la SUCURSAL operativa (GET/PUT /business/stamps/nfc-settings,
+// resuelta con el header x-branch-id). El tope vive en la sucursal: dos locales
+// del mismo negocio pueden tener topes distintos.
+export interface INfcSettings {
+  branchId: number | null; // sucursal a la que aplica (null = negocio sin sucursales, legado)
+  branchName: string | null;
+  continuousDailyLimit: number | null; // valor guardado en la sucursal (null = hereda el default)
+  effectiveDailyLimit: number; // el que aplica hoy (0 = sin tope)
+  defaultDailyLimit: number; // default global del entorno
+}
+
+export interface IUpdateNfcSettingsDto {
+  continuousDailyLimit?: number | null;
 }
 
 export interface INfcClaimDto {
@@ -1537,11 +1777,20 @@ export interface IBusinessQRData {
   businessName: string;
   qrCode: string; // Base64 del QR generado
   qrUrl: string; // URL que contiene el QR
+  /** Sucursal para la que se generó (sticker físico de ese local). null = QR general de la marca. */
+  branchId?: number | null;
+  branchName?: string | null;
 }
 
 // Nueva interfaz para solicitud de asociación con negocio
 export interface IJoinBusinessDto {
   businessId: number;
+  /**
+   * Sucursal impresa en el QR que el cliente escaneó (CP de Fase 3). La
+   * decide el negocio al generar el QR, no la elige el cliente en pantalla —
+   * mismo espíritu que RN-13, análogo al token estático del tag NFC.
+   */
+  branchId?: number;
 }
 
 // Nueva interfaz para respuesta de asociación con negocio
