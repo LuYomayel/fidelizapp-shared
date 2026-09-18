@@ -264,6 +264,16 @@ export enum BusinessUserStatus {
   INACTIVE = "inactive", // dado de baja (nunca se borra: RN-07)
 }
 
+/**
+ * Persona del Equipo que puede figurar como "Entregada por" (Trello #295): el
+ * mínimo para el desplegable de las entregas, sin email ni permisos.
+ */
+export interface IDeliverer {
+  id: number;
+  name: string;
+  role: BusinessUserRole;
+}
+
 export enum BusinessPermission {
   STAMPS_GIVE = "stamps.give", // Dar sellos y generar códigos
   REDEMPTIONS_DELIVER = "redemptions.deliver", // Entregar canjes
@@ -895,7 +905,10 @@ export interface IRewardRedemptionWithClientCard
 
 export interface IDeliverRedemptionDto {
   redemptionId: number;
-  employeeId: number;
+  /** Persona del Equipo que entrega (Trello #295). */
+  businessUserId?: number;
+  /** @deprecated "Empleados" se unió a "Equipo"; se acepta mientras se deploya. */
+  employeeId?: number;
   notes?: string;
 }
 
