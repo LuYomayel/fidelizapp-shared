@@ -826,8 +826,10 @@ export interface IReward {
   oneTimeUse: boolean;
   isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
   rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
-  branchId?: number | null; // null = de la marca (todos los locales); X = solo en esa sucursal (RN-14)
-  branchName?: string | null; // nombre de esa sucursal, para avisarle al cliente antes de canjear
+  /** @deprecated usar `branchIds` (Trello #295). */
+  branchId?: number | null;
+  branchIds?: number[] | null; // vacío/null = de la marca (todos los locales); [X, Y] = solo en esas (RN-14, #295)
+  branchName?: string | null; // "Belgrano" o "Belgrano y Palermo", para avisarle al cliente antes de canjear
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -1302,6 +1304,8 @@ export type ICreateRewardDto = {
   expirationDate: Date | null;
   stock: number | null;
   oneTimeUse: boolean;
+  /** Sucursales donde se ofrece; vacío = de la marca (Trello #295). */
+  branchIds?: number[];
 };
 export type IUpdateRewardDto = Partial<
   ICreateRewardDto & { active: boolean; isBirthdayOnly?: boolean }
