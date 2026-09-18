@@ -274,6 +274,7 @@ export enum BusinessPermission {
   TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Administrador)
   SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Administrador)
   BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Administrador, Fase 2)
+  NFC_LIMIT_CONFIGURE = "nfc.limit.configure", // Cambiar el tope de sellos NFC por cliente y por día de su sucursal
 }
 
 export const ALL_BUSINESS_PERMISSIONS: readonly BusinessPermission[] =
@@ -1325,9 +1326,13 @@ export interface IRedeemStampDto {
   code: string;
 }
 
-// Configuración NFC del negocio (GET/PUT /business/stamps/nfc-settings)
+// Configuración NFC de la SUCURSAL operativa (GET/PUT /business/stamps/nfc-settings,
+// resuelta con el header x-branch-id). El tope vive en la sucursal: dos locales
+// del mismo negocio pueden tener topes distintos.
 export interface INfcSettings {
-  continuousDailyLimit: number | null; // valor guardado (null = usa el default global)
+  branchId: number | null; // sucursal a la que aplica (null = negocio sin sucursales, legado)
+  branchName: string | null;
+  continuousDailyLimit: number | null; // valor guardado en la sucursal (null = hereda el default)
   effectiveDailyLimit: number; // el que aplica hoy (0 = sin tope)
   defaultDailyLimit: number; // default global del entorno
 }
