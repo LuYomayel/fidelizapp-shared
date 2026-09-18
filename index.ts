@@ -162,12 +162,12 @@ export interface BusinessUser extends BaseUser {
   provider: "email" | "google";
   picture?: string;
   subscriptionTier?: SubscriptionTier;
-  // Equipo (Fase 1 sucursales). Ausentes en tokens viejos = se trata como Dueño.
+  // Equipo (Fase 1 sucursales). Ausentes en tokens viejos = se trata como Administrador.
   businessUserId?: number;
   role?: BusinessUserRole;
   permissions?: BusinessPermission[];
   displayName?: string;
-  /** Sucursales donde puede operar. null/ausente = todas (Dueño o token viejo). */
+  /** Sucursales donde puede operar. null/ausente = todas (Administrador o token viejo). */
   branchIds?: number[] | null;
 }
 
@@ -245,11 +245,11 @@ export interface BusinessRequest {
 // ======= EQUIPO: USUARIOS Y PERMISOS DEL NEGOCIO (Fase 1 sucursales) =======
 // Cada negocio puede tener varias personas con acceso, cada una con su propio
 // mail/contraseña y sus propios permisos. La cuenta original del negocio es la
-// persona "Dueño". El JWT sigue teniendo sub=businessId; se suman
+// persona "Administrador". El JWT sigue teniendo sub=businessId; se suman
 // businessUserId/role/permissions.
 //
-// Acta del 31/08/2026: hay UNA sola figura administrativa (Dueño/admin) y el
-// resto son empleados a los que el Dueño les marca qué pueden hacer. No existe
+// Acta del 31/08/2026: hay UNA sola figura administrativa (Administrador) y el
+// resto son empleados a los que el Administrador les marca qué pueden hacer. No existe
 // un rol intermedio "Encargado": un encargado es un empleado con más permisos
 // tildados.
 
@@ -271,15 +271,15 @@ export enum BusinessPermission {
   REWARDS_MANAGE = "rewards.manage", // Crear y editar recompensas
   STATS_VIEW = "stats.view", // Ver estadísticas
   PROGRAM_CONFIGURE = "program.configure", // Reglas de sellos, wallet, turnos, Fudo
-  TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Dueño)
-  SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Dueño)
-  BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Dueño, Fase 2)
+  TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Administrador)
+  SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Administrador)
+  BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Administrador, Fase 2)
 }
 
 export const ALL_BUSINESS_PERMISSIONS: readonly BusinessPermission[] =
   Object.values(BusinessPermission);
 
-/** Permisos exclusivos del Dueño: no se pueden otorgar por "Personalizar". */
+/** Permisos exclusivos del Administrador: no se pueden otorgar por "Personalizar". */
 export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
   BusinessPermission.TEAM_MANAGE,
   BusinessPermission.SUBSCRIPTION_MANAGE,
@@ -291,7 +291,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Readonly<
   Record<BusinessUserRole, readonly BusinessPermission[]>
 > = {
   [BusinessUserRole.OWNER]: ALL_BUSINESS_PERMISSIONS,
-  // Con lo que arranca un empleado nuevo; el Dueño le tilda el resto.
+  // Con lo que arranca un empleado nuevo; el Administrador le tilda el resto.
   [BusinessUserRole.EMPLOYEE]: [
     BusinessPermission.STAMPS_GIVE,
     BusinessPermission.REDEMPTIONS_DELIVER,
@@ -300,8 +300,8 @@ export const ROLE_DEFAULT_PERMISSIONS: Readonly<
 
 /**
  * Permisos efectivos de una persona: los del rol, salvo que tenga excepciones
- * (`customPermissions`, RN-04). El Dueño siempre tiene todo; los exclusivos
- * del Dueño nunca se otorgan por excepción.
+ * (`customPermissions`, RN-04). El Administrador siempre tiene todo; los exclusivos
+ * del Administrador nunca se otorgan por excepción.
  */
 export function resolveBusinessPermissions(
   role: BusinessUserRole,
@@ -322,7 +322,8 @@ export interface IBusinessUser {
   status: BusinessUserStatus;
   customPermissions: BusinessPermission[] | null; // null = usa los del rol
   permissions: BusinessPermission[]; // efectivos (calculados)
-  branchIds: number[] | null; // sucursales donde trabaja; null = todas (siempre el Dueño, RN-03)
+  /** Sucursal donde trabaja. El Administrador: null = todas (RN-03). Un empleado: SIEMPRE exactamente una (RN-02, decisión 2026-09-12): sus sellos se atribuyen a esa sucursal, sin selector. */
+  branchIds: number[] | null;
   invitedAt: Date | null;
   inviteExpiresAt: Date | null;
   acceptedAt: Date | null;
@@ -393,6 +394,8 @@ export interface IBusiness {
   preRegistrationToken?: string;
   nfcToken?: string; // Token opaco (UUID) para el tag NFC del negocio (sticker)
   nfcContinuousDailyLimit?: number | null; // Tope de sellos NFC (modo continuo) por cliente/día calendario. null = default global, 0 = sin tope
+  /** Sucursales incluidas para ESTE negocio, pisa lo que dice su plan (RN-18). null = manda el plan. Lo setea la plataforma (Nomada Café, The Good Joe). */
+  branchesIncludedOverride?: number | null;
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -475,8 +478,6 @@ export interface ICreateBranchDto {
   neighborhood?: string | null;
   province?: string | null;
   phone?: string | null;
-  /** El front lo manda en true recién cuando el usuario aceptó el cargo extra (CP-16). */
-  acceptExtraCharge?: boolean;
 }
 
 export interface IUpdateBranchDto {
@@ -487,27 +488,31 @@ export interface IUpdateBranchDto {
   phone?: string | null;
 }
 
-/** Cuántas sucursales incluye cada plan sin costo adicional (RN-18). */
-export const BRANCHES_INCLUDED_BY_TIER: Readonly<Record<string, number>> = {
-  [SUBSCRIPTION_TIERS.PREMIUM]: 2,
-  [SUBSCRIPTION_TIERS.BETA]: 2,
-  [SUBSCRIPTION_TIERS.ENTERPRISE]: 2,
-};
+/**
+ * Cupo de sucursales (RN-18, decisión 2026-09-12): NO hay cargo por sucursal.
+ * Cuántas sucursales tiene un negocio lo dice SU PLAN (`ISubscriptionPlan.maxBranches`,
+ * null = 1) o un override por negocio que setea la plataforma
+ * (`IBusiness.branchesIncludedOverride`, para Nomada Café y The Good Joe, que
+ * prueban la funcionalidad dentro de su Premium). Para sumar locales el negocio
+ * cambia al plan que los incluye (2, 3); para más de 3 se habla con ventas.
+ */
+export const DEFAULT_BRANCHES_INCLUDED = 1;
+/** Hasta cuántas sucursales se venden por autogestión (cambiando de plan). Más: ventas. */
+export const MAX_SELF_SERVICE_BRANCHES = 3;
 
-/** Sucursales incluidas para un tier. Los planes menores no tienen sucursales (RN-20). */
-export function branchesIncludedForTier(tier?: string): number {
-  if (!tier) return 1;
-  return BRANCHES_INCLUDED_BY_TIER[tier] ?? 1;
-}
+/** Qué le falta al negocio para abrir una sucursal más. */
+export type BranchQuotaNextStep =
+  | "none" // todavía le quedan sucursales en el plan
+  | "upgrade_plan" // tiene que pasar al plan que incluye más sucursales
+  | "contact_sales"; // ya está en el máximo autogestionable
 
-/** Estado del cupo de sucursales, para avisar el cargo ANTES de crear (CP-16). */
+/** Estado del cupo de sucursales, para explicar ANTES de intentar crear (CP-16). */
 export interface IBranchQuota {
   used: number; // sucursales activas hoy
-  included: number; // cuántas entran en el plan
-  canCreateWithoutCharge: boolean;
-  requiresExtraCharge: boolean; // crear la próxima sale extra
-  extraMonthlyPrice: number | null; // null = precio todavía sin definir
-  currency: string;
+  included: number; // cuántas entran en el plan (o en el override del negocio)
+  canCreate: boolean;
+  nextStep: BranchQuotaNextStep;
+  maxSelfService: number; // = MAX_SELF_SERVICE_BRANCHES, para que el front no lo hardcodee
 }
 
 export interface IBranchesResponse {
@@ -552,6 +557,7 @@ export interface ISubscriptionPlan {
   maxClients?: number; // Límite de clientes (null = ilimitado)
   maxStamps?: number; // Límite de sellos por mes (null = ilimitado)
   maxRewards?: number; // Límite de recompensas activas (null = ilimitado)
+  maxBranches?: number | null; // Sucursales incluidas (null = 1, RN-18)
   isPublic: boolean; // Si se muestra públicamente o requiere código
   isActive: boolean; // Si está disponible para contratación
   trialDays?: number; // Días de prueba gratuita
@@ -621,6 +627,7 @@ export interface ICreateSubscriptionPlanDto {
   maxClients?: number;
   maxStamps?: number;
   maxRewards?: number;
+  maxBranches?: number | null;
   isPublic: boolean;
   isActive: boolean;
   trialDays?: number;
