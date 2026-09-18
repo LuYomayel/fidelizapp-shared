@@ -501,6 +501,15 @@ export const DEFAULT_BRANCHES_INCLUDED = 1;
 /** Hasta cuántas sucursales se venden por autogestión (cambiando de plan). Más: ventas. */
 export const MAX_SELF_SERVICE_BRANCHES = 3;
 
+/**
+ * Valor de `x-branch-id` para la vista "Todas las sucursales" del
+ * Administrador (Trello #295). Viaja explícito para no confundirse con "sin
+ * header", que es lo que manda un negocio de un solo local. Las pantallas que
+ * muestran datos ven la marca entera; las que operan (sello, NFC, entregar un
+ * canje) exigen elegir una sucursal.
+ */
+export const GLOBAL_BRANCH_HEADER_VALUE = "all";
+
 /** Qué le falta al negocio para abrir una sucursal más. */
 export type BranchQuotaNextStep =
   | "none" // todavía le quedan sucursales en el plan
@@ -2616,7 +2625,13 @@ export interface IStampGrantingRules {
   multiplierRules: IStampMultiplierRule[];
 }
 
-export type IUpsertStampGrantingRulesDto = IStampGrantingRules;
+/**
+ * `scope: 'brand'` guarda las reglas de la marca aunque haya una sucursal
+ * activa; en la vista "Todas las sucursales" es la única opción (Trello #295).
+ */
+export type IUpsertStampGrantingRulesDto = IStampGrantingRules & {
+  scope?: "brand" | "branch";
+};
 
 export interface IFudoProductOption {
   id: string;
