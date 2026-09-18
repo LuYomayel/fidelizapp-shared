@@ -851,6 +851,7 @@ export interface IRewardRedemption {
   expiresAt?: Date; // Fecha de expiración del código
   deliveredAt?: Date; // Cuándo se entregó la recompensa física
   deliveredBy?: string; // Quién entregó la recompensa
+  branchId?: number | null; // Sucursal donde se entregó (null mientras está pendiente) — RN-12
   notes?: string; // Notas adicionales del canje
   redeemedAt: Date;
   updatedAt: Date;
