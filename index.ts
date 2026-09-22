@@ -477,6 +477,8 @@ export interface IBranch {
   neighborhood?: string | null;
   province?: string | null;
   phone?: string | null;
+  /** Google Place ID de ESTE local (acta 21/09). `Business.placeId` es el de la marca. */
+  placeId?: string | null;
   isMain: boolean; // la "Sucursal principal" que hereda el historial del negocio
   active: boolean;
   createdAt: Date;
@@ -489,6 +491,7 @@ export interface ICreateBranchDto {
   neighborhood?: string | null;
   province?: string | null;
   phone?: string | null;
+  placeId?: string | null;
 }
 
 export interface IUpdateBranchDto {
@@ -497,6 +500,7 @@ export interface IUpdateBranchDto {
   neighborhood?: string | null;
   province?: string | null;
   phone?: string | null;
+  placeId?: string | null;
 }
 
 /**
