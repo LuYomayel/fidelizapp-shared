@@ -301,6 +301,16 @@ export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
   BusinessPermission.BRANCHES_MANAGE,
 ];
 
+/**
+ * El piso de todo el equipo (Trello #300, punto 6): dar sellos y entregar
+ * canjes no se pueden destildar. Es lo mínimo para atender el mostrador, así
+ * que toda persona invitada los tiene, con o sin permisos personalizados.
+ */
+export const MINIMUM_BUSINESS_PERMISSIONS: readonly BusinessPermission[] = [
+  BusinessPermission.STAMPS_GIVE,
+  BusinessPermission.REDEMPTIONS_DELIVER,
+];
+
 /** Permisos con los que arranca cada rol. */
 export const ROLE_DEFAULT_PERMISSIONS: Readonly<
   Record<BusinessUserRole, readonly BusinessPermission[]>
@@ -316,7 +326,8 @@ export const ROLE_DEFAULT_PERMISSIONS: Readonly<
 /**
  * Permisos efectivos de una persona: los del rol, salvo que tenga excepciones
  * (`customPermissions`, RN-04). El Administrador siempre tiene todo; los exclusivos
- * del Administrador nunca se otorgan por excepción.
+ * del Administrador nunca se otorgan por excepción, y los de
+ * `MINIMUM_BUSINESS_PERMISSIONS` nunca se quitan.
  */
 export function resolveBusinessPermissions(
   role: BusinessUserRole,
@@ -324,7 +335,8 @@ export function resolveBusinessPermissions(
 ): BusinessPermission[] {
   if (role === BusinessUserRole.OWNER) return [...ALL_BUSINESS_PERMISSIONS];
   const base = customPermissions ?? ROLE_DEFAULT_PERMISSIONS[role];
-  return base.filter((p) => !OWNER_ONLY_PERMISSIONS.includes(p));
+  const conMinimos = new Set([...base, ...MINIMUM_BUSINESS_PERMISSIONS]);
+  return [...conMinimos].filter((p) => !OWNER_ONLY_PERMISSIONS.includes(p));
 }
 
 export interface IBusinessUser {
