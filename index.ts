@@ -2813,3 +2813,226 @@ export interface IAppointmentStats {
   weekTotal: number;
   upcomingTotal: number;
 }
+
+// ============================================================================
+// EMAILS AUTOMÁTICOS — panel de administración
+// Catálogo de templates, historial de envíos, automatizaciones y envíos
+// manuales. El texto de cada template se puede editar desde el admin; el
+// diseño (HTML, colores, botón) lo sigue armando el backend.
+// ============================================================================
+
+export enum EmailTemplateKey {
+  BUSINESS_ABANDONED_CART = 'business_abandoned_cart',
+  BUSINESS_WELCOME = 'business_welcome',
+  BUSINESS_FOLLOW_UP_7D = 'business_follow_up_7d',
+  BUSINESS_CANCELLATION = 'business_cancellation',
+  BUSINESS_WIN_BACK_30D = 'business_win_back_30d',
+  BUSINESS_TRIAL_ENDING = 'business_trial_ending',
+  BUSINESS_PRICE_INCREASE = 'business_price_increase',
+  BUSINESS_TRANSFER_DUE_SOON = 'business_transfer_due_soon',
+  BUSINESS_TRANSFER_DUE_TODAY = 'business_transfer_due_today',
+  CLIENT_CARD_READY = 'client_card_ready',
+  CLIENT_ASSOCIATION_WELCOME = 'client_association_welcome',
+  CLIENT_GENERIC_WELCOME = 'client_generic_welcome',
+}
+
+export enum EmailAudience {
+  BUSINESS = 'business',
+  CLIENT = 'client',
+}
+
+/** Cómo se dispara el email en producción. */
+export enum EmailTriggerKind {
+  /** Lo manda un cron diario/horario. */
+  SCHEDULED = 'scheduled',
+  /** Lo dispara un evento del sistema (alta, cancelación, etc.). */
+  EVENT = 'event',
+}
+
+export enum EmailSendStatus {
+  SENT = 'sent',
+  FAILED = 'failed',
+  /** No se envió: automatización apagada, dry-run o destinatario ya notificado. */
+  SKIPPED = 'skipped',
+}
+
+export enum EmailSendTrigger {
+  CRON = 'cron',
+  EVENT = 'event',
+  /** Reenvío puntual desde el admin. */
+  MANUAL = 'manual',
+  /** Envío en tanda desde el admin. */
+  BULK = 'bulk',
+  /** Prueba a la casilla del admin. */
+  TEST = 'test',
+}
+
+export interface IEmailTemplateVariable {
+  name: string;
+  description: string;
+  example: string;
+}
+
+/** Bloque especial que el cuerpo puede incluir como línea propia. */
+export interface IEmailTemplateBlock {
+  token: string;
+  description: string;
+}
+
+export interface IEmailTemplateSummary {
+  key: EmailTemplateKey;
+  name: string;
+  description: string;
+  audience: EmailAudience;
+  triggerKind: EmailTriggerKind;
+  /** Texto legible: "Todos los días a las 10:00 (ART)". */
+  triggerDescription: string;
+  subject: string;
+  enabled: boolean;
+  /** true si el texto fue editado desde el admin (hay override en la DB). */
+  customized: boolean;
+  updatedAt: string | null;
+  sentLast30Days: number;
+  lastSentAt: string | null;
+  /** Puede dispararse a mano / en tanda desde el admin. */
+  supportsManualSend: boolean;
+}
+
+export interface IEmailTemplateDetail extends IEmailTemplateSummary {
+  /** Título del encabezado violeta del mail. */
+  title: string;
+  body: string;
+  defaultTitle: string;
+  defaultSubject: string;
+  defaultBody: string;
+  variables: IEmailTemplateVariable[];
+  blocks: IEmailTemplateBlock[];
+  /** Puede reenviarse/mandarse a mano desde el admin. */
+  supportsManualSend: boolean;
+}
+
+export interface IUpdateEmailTemplateDto {
+  title?: string;
+  subject?: string;
+  body?: string;
+}
+
+export interface IToggleEmailTemplateDto {
+  enabled: boolean;
+}
+
+export interface IEmailTemplatePreviewDto {
+  title?: string;
+  subject?: string;
+  body?: string;
+}
+
+export interface IEmailTemplatePreview {
+  subject: string;
+  html: string;
+  /** Variables usadas en el texto que no existen para este template. */
+  unknownVariables: string[];
+}
+
+export interface IEmailTestSendDto extends IEmailTemplatePreviewDto {
+  email: string;
+}
+
+export interface IEmailLogEntry {
+  id: number;
+  templateKey: EmailTemplateKey;
+  templateName: string;
+  recipientEmail: string;
+  recipientName: string | null;
+  businessId: number | null;
+  businessName: string | null;
+  clientId: number | null;
+  subject: string;
+  status: EmailSendStatus;
+  trigger: EmailSendTrigger;
+  errorMessage: string | null;
+  providerMessageId: string | null;
+  sentAt: string;
+}
+
+export interface IEmailLogFilters {
+  page?: number;
+  limit?: number;
+  templateKey?: EmailTemplateKey;
+  status?: EmailSendStatus;
+  trigger?: EmailSendTrigger;
+  search?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface IEmailLogStats {
+  total: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  last7Days: number;
+}
+
+/** Próximo envío programado de una automatización. */
+export interface IScheduledEmailRun {
+  templateKey: EmailTemplateKey;
+  templateName: string;
+  enabled: boolean;
+  cronDescription: string;
+  nextRunAt: string;
+  /** "en 2 días", "mañana", "hoy a las 10:00". */
+  nextRunLabel: string;
+  /** Cuántos destinatarios recibirían el mail si el cron corriera ahora. */
+  pendingRecipients: number;
+  sampleRecipients: string[];
+  note: string | null;
+}
+
+/** Candidato a recibir un envío manual/en tanda. */
+export interface IEmailRecipientCandidate {
+  businessId: number | null;
+  clientId: number | null;
+  name: string;
+  email: string;
+  /** true si ya recibió este template (el envío manual puede forzarlo igual). */
+  alreadySent: boolean;
+  lastSentAt: string | null;
+}
+
+export enum EmailBulkAudience {
+  /** Los destinatarios elegidos a mano. */
+  SELECTED = 'selected',
+  /** Todos los negocios con suscripción activa. */
+  ACTIVE_BUSINESSES = 'active_businesses',
+  /** Todos los negocios activos que todavía no recibieron este template. */
+  PENDING_BUSINESSES = 'pending_businesses',
+}
+
+export interface IEmailManualSendDto {
+  audience: EmailBulkAudience;
+  businessIds?: number[];
+  clientIds?: number[];
+  /** Reenviar aunque el destinatario ya lo haya recibido. */
+  force?: boolean;
+  /** true = no envía, solo devuelve a quiénes le mandaría. */
+  dryRun?: boolean;
+}
+
+export interface IEmailManualSendResultItem {
+  email: string;
+  name: string;
+  businessId: number | null;
+  clientId: number | null;
+  status: EmailSendStatus;
+  reason: string | null;
+}
+
+export interface IEmailManualSendResult {
+  dryRun: boolean;
+  requested: number;
+  sent: number;
+  skipped: number;
+  failed: number;
+  items: IEmailManualSendResultItem[];
+}
