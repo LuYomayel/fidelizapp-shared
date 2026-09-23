@@ -2894,6 +2894,8 @@ export interface IEmailTemplateSummary {
   updatedAt: string | null;
   sentLast30Days: number;
   lastSentAt: string | null;
+  /** Puede dispararse a mano / en tanda desde el admin. */
+  supportsManualSend: boolean;
 }
 
 export interface IEmailTemplateDetail extends IEmailTemplateSummary {
