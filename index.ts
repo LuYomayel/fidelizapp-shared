@@ -2,10 +2,14 @@
 // Solo TypeScript puro - sin dependencias de NestJS
 
 // ======= ENUMS =======
+// Tamaño del negocio por cantidad de sucursales (Trello #270). Los valores
+// viejos ("1-5 sucursales", "5-10 sucursales", "+10 sucursales") quedaron
+// solo como legado en la columna del backend.
 export enum BusinessSize {
-  SMALL = "1-5 sucursales",
-  MEDIUM = "5-10 sucursales",
-  LARGE = "+10 sucursales",
+  ONE = "Solo una sucursal",
+  TWO = "2 sucursales",
+  THREE = "3 sucursales",
+  MORE_THAN_THREE = "Más de 3 sucursales",
 }
 
 export enum BusinessType {
