@@ -409,6 +409,8 @@ export interface IBusiness {
   logoPath?: string;
   type: BusinessType;
   placeId?: string;
+  /** Pedirles review a los clientes (Trello #271). Arranca prendido. */
+  reviewsEnabled?: boolean;
   customType?: string;
   instagram?: string;
   tiktok?: string;
@@ -1725,6 +1727,8 @@ export interface IBusinessProfile {
   updatedAt: Date;
   subscription: IBusinessSubscription;
   placeId?: string;
+  /** Pedirles review a los clientes (Trello #271). */
+  reviewsEnabled?: boolean;
   clientCount?: number;
 }
 
@@ -1792,6 +1796,8 @@ export interface IUpdateBusinessProfileDto {
   internalPhone?: string;
   externalPhone?: string;
   placeId?: string;
+  /** Switch de Configuración → Perfil (Trello #271). */
+  reviewsEnabled?: boolean;
   size?: BusinessSize;
   street?: string;
   neighborhood?: string;
@@ -2834,6 +2840,7 @@ export enum EmailTemplateKey {
   CLIENT_CARD_READY = 'client_card_ready',
   CLIENT_ASSOCIATION_WELCOME = 'client_association_welcome',
   CLIENT_GENERIC_WELCOME = 'client_generic_welcome',
+  BUSINESS_NEGATIVE_REVIEW = 'business_negative_review',
 }
 
 export enum EmailAudience {
@@ -3036,3 +3043,50 @@ export interface IEmailManualSendResult {
   failed: number;
   items: IEmailManualSendResultItem[];
 }
+
+// ─── Reviews (Trello #271) ──────────────────────────────────────────────────
+//
+// Después de sumar sellos el cliente califica al negocio de 1 a 5 estrellas.
+// De 1 a 3 escribe qué pasó (hasta 500 caracteres) y queda solo en Stampia;
+// de 4 a 5 se lo manda a dejar la reseña en Google Maps, a la ficha de la
+// sucursal donde recibió el sello. Toda review es anónima para el negocio.
+
+export const REVIEW_MIN_RATING = 1;
+export const REVIEW_MAX_RATING = 5;
+/** Desde esta nota se lo manda a Google Maps; debajo, se queda en Stampia. */
+export const REVIEW_GOOGLE_MIN_RATING = 4;
+export const REVIEW_COMMENT_MAX_LENGTH = 500;
+
+/** Lo que manda el cliente al calificar. */
+export interface ICreateReviewDto {
+  rating: number;
+  /** Solo de 1 a 3 estrellas. */
+  comment?: string;
+  /** Sello que disparó el pedido: define la sucursal de la review. */
+  stampId?: number;
+}
+
+export interface ICreateReviewResponse {
+  /** Link a la ficha de Google Maps (4-5 estrellas con lugar cargado). */
+  googleReviewUrl: string | null;
+}
+
+/** Review tal como la ve el negocio: anónima, sin datos del cliente. */
+export interface IBusinessReview {
+  id: number;
+  rating: number;
+  comment: string | null;
+  branchId: number | null;
+  branchName: string | null;
+  /** 4-5 estrellas: se lo mandó a dejar la reseña en Google Maps. */
+  sentToGoogle: boolean;
+  createdAt: Date;
+}
+
+export interface IBusinessReviewsSummary {
+  total: number;
+  /** Promedio de 1 a 5 con un decimal; null sin reviews. */
+  averageRating: number | null;
+  sentToGoogle: number;
+}
+
