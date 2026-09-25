@@ -2,10 +2,14 @@
 // Solo TypeScript puro - sin dependencias de NestJS
 
 // ======= ENUMS =======
+// Tamaño del negocio por cantidad de sucursales (Trello #270). Los valores
+// viejos ("1-5 sucursales", "5-10 sucursales", "+10 sucursales") quedaron
+// solo como legado en la columna del backend.
 export enum BusinessSize {
-  SMALL = "1-5 sucursales",
-  MEDIUM = "5-10 sucursales",
-  LARGE = "+10 sucursales",
+  ONE = "Solo una sucursal",
+  TWO = "2 sucursales",
+  THREE = "3 sucursales",
+  MORE_THAN_THREE = "Más de 3 sucursales",
 }
 
 export enum BusinessType {
@@ -162,6 +166,13 @@ export interface BusinessUser extends BaseUser {
   provider: "email" | "google";
   picture?: string;
   subscriptionTier?: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Ausentes en tokens viejos = se trata como Administrador.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
+  /** Sucursales donde puede operar. null/ausente = todas (Administrador o token viejo). */
+  branchIds?: number[] | null;
 }
 
 export interface PlatformAdminUser extends BaseUser {
@@ -195,6 +206,11 @@ export interface BusinessJwtPayload extends BaseJwtPayload {
   provider: "email" | "google";
   emailVerified: boolean;
   subscriptionTier: SubscriptionTier;
+  // Equipo (Fase 1 sucursales). Opcionales para compatibilidad con tokens viejos.
+  businessUserId?: number;
+  role?: BusinessUserRole;
+  permissions?: BusinessPermission[];
+  displayName?: string;
 }
 
 export interface PlatformJwtPayload extends BaseJwtPayload {
@@ -230,6 +246,150 @@ export interface BusinessRequest {
   user: BusinessUser;
 }
 
+// ======= EQUIPO: USUARIOS Y PERMISOS DEL NEGOCIO (Fase 1 sucursales) =======
+// Cada negocio puede tener varias personas con acceso, cada una con su propio
+// mail/contraseña y sus propios permisos. La cuenta original del negocio es la
+// persona "Administrador". El JWT sigue teniendo sub=businessId; se suman
+// businessUserId/role/permissions.
+//
+// Acta del 31/08/2026: hay UNA sola figura administrativa (Administrador) y el
+// resto son empleados a los que el Administrador les marca qué pueden hacer. No existe
+// un rol intermedio "Encargado": un encargado es un empleado con más permisos
+// tildados.
+
+export enum BusinessUserRole {
+  OWNER = "owner",
+  EMPLOYEE = "employee",
+}
+
+export enum BusinessUserStatus {
+  INVITED = "invited", // invitación enviada, todavía no eligió contraseña
+  ACTIVE = "active",
+  INACTIVE = "inactive", // dado de baja (nunca se borra: RN-07)
+}
+
+/**
+ * Persona del Equipo que puede figurar como "Entregada por" (Trello #295): el
+ * mínimo para el desplegable de las entregas, sin email ni permisos.
+ */
+export interface IDeliverer {
+  id: number;
+  name: string;
+  role: BusinessUserRole;
+}
+
+export enum BusinessPermission {
+  STAMPS_GIVE = "stamps.give", // Dar sellos y generar códigos
+  REDEMPTIONS_DELIVER = "redemptions.deliver", // Entregar canjes
+  CLIENTS_VIEW = "clients.view", // Ver la lista de clientes (mail, teléfono, cumpleaños)
+  REWARDS_MANAGE = "rewards.manage", // Crear y editar recompensas
+  STATS_VIEW = "stats.view", // Ver estadísticas
+  PROGRAM_CONFIGURE = "program.configure", // Reglas de sellos, wallet, turnos, Fudo
+  TEAM_MANAGE = "team.manage", // Invitar personas y cambiar permisos (solo Administrador)
+  SUBSCRIPTION_MANAGE = "subscription.manage", // Ver y cambiar la suscripción (solo Administrador)
+  BRANCHES_MANAGE = "branches.manage", // Crear y dar de baja sucursales (solo Administrador, Fase 2)
+  NFC_LIMIT_CONFIGURE = "nfc.limit.configure", // Cambiar el tope de sellos NFC por cliente y por día de su sucursal
+}
+
+export const ALL_BUSINESS_PERMISSIONS: readonly BusinessPermission[] =
+  Object.values(BusinessPermission);
+
+/** Permisos exclusivos del Administrador: no se pueden otorgar por "Personalizar". */
+export const OWNER_ONLY_PERMISSIONS: readonly BusinessPermission[] = [
+  BusinessPermission.TEAM_MANAGE,
+  BusinessPermission.SUBSCRIPTION_MANAGE,
+  BusinessPermission.BRANCHES_MANAGE,
+];
+
+/**
+ * El piso de todo el equipo (Trello #300, punto 6): dar sellos y entregar
+ * canjes no se pueden destildar. Es lo mínimo para atender el mostrador, así
+ * que toda persona invitada los tiene, con o sin permisos personalizados.
+ */
+export const MINIMUM_BUSINESS_PERMISSIONS: readonly BusinessPermission[] = [
+  BusinessPermission.STAMPS_GIVE,
+  BusinessPermission.REDEMPTIONS_DELIVER,
+];
+
+/** Permisos con los que arranca cada rol. */
+export const ROLE_DEFAULT_PERMISSIONS: Readonly<
+  Record<BusinessUserRole, readonly BusinessPermission[]>
+> = {
+  [BusinessUserRole.OWNER]: ALL_BUSINESS_PERMISSIONS,
+  // Con lo que arranca un empleado nuevo; el Administrador le tilda el resto.
+  [BusinessUserRole.EMPLOYEE]: [
+    BusinessPermission.STAMPS_GIVE,
+    BusinessPermission.REDEMPTIONS_DELIVER,
+  ],
+};
+
+/**
+ * Permisos efectivos de una persona: los del rol, salvo que tenga excepciones
+ * (`customPermissions`, RN-04). El Administrador siempre tiene todo; los exclusivos
+ * del Administrador nunca se otorgan por excepción, y los de
+ * `MINIMUM_BUSINESS_PERMISSIONS` nunca se quitan.
+ */
+export function resolveBusinessPermissions(
+  role: BusinessUserRole,
+  customPermissions?: readonly BusinessPermission[] | null,
+): BusinessPermission[] {
+  if (role === BusinessUserRole.OWNER) return [...ALL_BUSINESS_PERMISSIONS];
+  const base = customPermissions ?? ROLE_DEFAULT_PERMISSIONS[role];
+  const conMinimos = new Set([...base, ...MINIMUM_BUSINESS_PERMISSIONS]);
+  return [...conMinimos].filter((p) => !OWNER_ONLY_PERMISSIONS.includes(p));
+}
+
+export interface IBusinessUser {
+  id: number;
+  businessId: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: BusinessUserRole;
+  status: BusinessUserStatus;
+  customPermissions: BusinessPermission[] | null; // null = usa los del rol
+  permissions: BusinessPermission[]; // efectivos (calculados)
+  /** Sucursal donde trabaja. El Administrador: null = todas (RN-03). Un empleado: SIEMPRE exactamente una (RN-02, decisión 2026-09-12): sus sellos se atribuyen a esa sucursal, sin selector. */
+  branchIds: number[] | null;
+  invitedAt: Date | null;
+  inviteExpiresAt: Date | null;
+  acceptedAt: Date | null;
+  lastLoginAt: Date | null;
+  isSelf?: boolean; // true para la persona que está logueada
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IInviteBusinessUserDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role?: BusinessUserRole.EMPLOYEE; // única opción; queda por compatibilidad
+  customPermissions?: BusinessPermission[] | null;
+  branchIds?: number[] | null;
+}
+
+export interface IUpdateBusinessUserDto {
+  firstName?: string;
+  lastName?: string;
+  role?: BusinessUserRole;
+  customPermissions?: BusinessPermission[] | null; // null = volver a los del rol
+  branchIds?: number[] | null;
+}
+
+export interface IAcceptBusinessInvitationDto {
+  password: string;
+}
+
+export interface IBusinessInvitationPreview {
+  businessName: string;
+  email: string;
+  firstName: string;
+  role: BusinessUserRole;
+  expired: boolean;
+  alreadyAccepted: boolean;
+}
+
 // ======= INTERFACES BÁSICAS =======
 export interface IBusiness {
   id: number | string;
@@ -249,6 +409,8 @@ export interface IBusiness {
   logoPath?: string;
   type: BusinessType;
   placeId?: string;
+  /** Pedirles review a los clientes (Trello #271). Arranca prendido. */
+  reviewsEnabled?: boolean;
   customType?: string;
   instagram?: string;
   tiktok?: string;
@@ -260,6 +422,9 @@ export interface IBusiness {
   status?: BusinessStatus;
   preRegistrationToken?: string;
   nfcToken?: string; // Token opaco (UUID) para el tag NFC del negocio (sticker)
+  nfcContinuousDailyLimit?: number | null; // Tope de sellos NFC (modo continuo) por cliente/día calendario. null = default global, 0 = sin tope
+  /** Sucursales incluidas para ESTE negocio, pisa lo que dice su plan (RN-18). null = manda el plan. Lo setea la plataforma (Nomada Café, The Good Joe). */
+  branchesIncludedOverride?: number | null;
   registrationStep: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -316,6 +481,87 @@ export const SUBSCRIPTION_TIERS = {
   ENTERPRISE: "enterprise", // Plan empresarial
 } as const;
 
+// ======= SUCURSALES (Fase 2) =======
+// Regla que ordena todo: lo que ve el CLIENTE es de la marca, lo que OPERA el
+// negocio es de la sucursal. El cliente tiene una sola tarjeta, un solo pase de
+// wallet y un solo saldo de sellos aunque entre a cualquier local; se guarda en
+// qué sucursal pasó cada sello y cada canje, pero el saldo es uno solo (RN-11).
+
+export interface IBranch {
+  id: number;
+  businessId: number;
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  /** Google Place ID de ESTE local (acta 21/09). `Business.placeId` es el de la marca. */
+  placeId?: string | null;
+  isMain: boolean; // la "Sucursal principal" que hereda el historial del negocio
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICreateBranchDto {
+  name: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  placeId?: string | null;
+}
+
+export interface IUpdateBranchDto {
+  name?: string;
+  street?: string | null;
+  neighborhood?: string | null;
+  province?: string | null;
+  phone?: string | null;
+  placeId?: string | null;
+}
+
+/**
+ * Cupo de sucursales (RN-18, decisión 2026-09-12): NO hay cargo por sucursal.
+ * Cuántas sucursales tiene un negocio lo dice SU PLAN (`ISubscriptionPlan.maxBranches`,
+ * null = 1) o un override por negocio que setea la plataforma
+ * (`IBusiness.branchesIncludedOverride`, para Nomada Café y The Good Joe, que
+ * prueban la funcionalidad dentro de su Premium). Para sumar locales el negocio
+ * cambia al plan que los incluye (2, 3); para más de 3 se habla con ventas.
+ */
+export const DEFAULT_BRANCHES_INCLUDED = 1;
+/** Hasta cuántas sucursales se venden por autogestión (cambiando de plan). Más: ventas. */
+export const MAX_SELF_SERVICE_BRANCHES = 3;
+
+/**
+ * Valor de `x-branch-id` para la vista "Todas las sucursales" del
+ * Administrador (Trello #295). Viaja explícito para no confundirse con "sin
+ * header", que es lo que manda un negocio de un solo local. Las pantallas que
+ * muestran datos ven la marca entera; las que operan (sello, NFC, entregar un
+ * canje) exigen elegir una sucursal.
+ */
+export const GLOBAL_BRANCH_HEADER_VALUE = "all";
+
+/** Qué le falta al negocio para abrir una sucursal más. */
+export type BranchQuotaNextStep =
+  | "none" // todavía le quedan sucursales en el plan
+  | "upgrade_plan" // tiene que pasar al plan que incluye más sucursales
+  | "contact_sales"; // ya está en el máximo autogestionable
+
+/** Estado del cupo de sucursales, para explicar ANTES de intentar crear (CP-16). */
+export interface IBranchQuota {
+  used: number; // sucursales activas hoy
+  included: number; // cuántas entran en el plan (o en el override del negocio)
+  canCreate: boolean;
+  nextStep: BranchQuotaNextStep;
+  maxSelfService: number; // = MAX_SELF_SERVICE_BRANCHES, para que el front no lo hardcodee
+}
+
+export interface IBranchesResponse {
+  branches: IBranch[];
+  quota: IBranchQuota;
+}
+
 export enum SubscriptionStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -353,6 +599,7 @@ export interface ISubscriptionPlan {
   maxClients?: number; // Límite de clientes (null = ilimitado)
   maxStamps?: number; // Límite de sellos por mes (null = ilimitado)
   maxRewards?: number; // Límite de recompensas activas (null = ilimitado)
+  maxBranches?: number | null; // Sucursales incluidas (null = 1, RN-18)
   isPublic: boolean; // Si se muestra públicamente o requiere código
   isActive: boolean; // Si está disponible para contratación
   trialDays?: number; // Días de prueba gratuita
@@ -422,6 +669,7 @@ export interface ICreateSubscriptionPlanDto {
   maxClients?: number;
   maxStamps?: number;
   maxRewards?: number;
+  maxBranches?: number | null;
   isPublic: boolean;
   isActive: boolean;
   trialDays?: number;
@@ -546,6 +794,11 @@ export interface IClientCard {
   redemptions?: IStampRedemption[];
   lastReviewedAt?: Date;
   hiddenAt?: Date | null;
+  /**
+   * Sucursal donde se dio de alta esta tarjeta (join por QR de local o primer
+   * sello). null = no se sabe / marca entera (tarjetas de antes de Fase 3).
+   */
+  branchId?: number | null;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -605,6 +858,10 @@ export interface IReward {
   oneTimeUse: boolean;
   isBirthdayOnly?: boolean; // Si true, no aparece en lista pública de recompensas
   rewardScope?: RewardScope | null; // Extensibilidad: public | birthday_only | custom
+  /** @deprecated usar `branchIds` (Trello #295). */
+  branchId?: number | null;
+  branchIds?: number[] | null; // vacío/null = de la marca (todos los locales); [X, Y] = solo en esas (RN-14, #295)
+  branchName?: string | null; // "Belgrano" o "Belgrano y Palermo", para avisarle al cliente antes de canjear
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -626,6 +883,7 @@ export interface IRewardRedemption {
   expiresAt?: Date; // Fecha de expiración del código
   deliveredAt?: Date; // Cuándo se entregó la recompensa física
   deliveredBy?: string; // Quién entregó la recompensa
+  branchId?: number | null; // Sucursal donde se entregó (null mientras está pendiente) — RN-12
   notes?: string; // Notas adicionales del canje
   redeemedAt: Date;
   updatedAt: Date;
@@ -669,7 +927,10 @@ export interface IRewardRedemptionWithClientCard
 
 export interface IDeliverRedemptionDto {
   redemptionId: number;
-  employeeId: number;
+  /** Persona del Equipo que entrega (Trello #295). */
+  businessUserId?: number;
+  /** @deprecated "Empleados" se unió a "Equipo"; se acepta mientras se deploya. */
+  employeeId?: number;
   notes?: string;
 }
 
@@ -845,6 +1106,24 @@ export type RewardsRedeemedResult = {
   previousMonth: number;
   growth: number;
 };
+
+/** Una fila de la comparativa entre sucursales (Fase 3). */
+export interface IBranchComparisonRow {
+  branchId: number;
+  branchName: string;
+  isMain: boolean;
+  stampsIssuedMonth: number;
+  stampsIssuedTotal: number;
+  activeClientsMonth: number;
+  activeClientsTotal: number;
+  rewardsRedeemedMonth: number;
+  rewardsRedeemedTotal: number;
+}
+
+export interface IBranchComparisonResult {
+  period: { current: Date; previous: Date };
+  branches: IBranchComparisonRow[];
+}
 
 export type ClientRetentionResult = {
   rate: number;
@@ -1061,6 +1340,8 @@ export type ICreateRewardDto = {
   expirationDate: Date | null;
   stock: number | null;
   oneTimeUse: boolean;
+  /** Sucursales donde se ofrece; vacío = de la marca (Trello #295). */
+  branchIds?: number[];
 };
 export type IUpdateRewardDto = Partial<
   ICreateRewardDto & { active: boolean; isBirthdayOnly?: boolean }
@@ -1092,6 +1373,21 @@ export interface IUpsertBirthdayRewardConfigDto {
 
 export interface IRedeemStampDto {
   code: string;
+}
+
+// Configuración NFC de la SUCURSAL operativa (GET/PUT /business/stamps/nfc-settings,
+// resuelta con el header x-branch-id). El tope vive en la sucursal: dos locales
+// del mismo negocio pueden tener topes distintos.
+export interface INfcSettings {
+  branchId: number | null; // sucursal a la que aplica (null = negocio sin sucursales, legado)
+  branchName: string | null;
+  continuousDailyLimit: number | null; // valor guardado en la sucursal (null = hereda el default)
+  effectiveDailyLimit: number; // el que aplica hoy (0 = sin tope)
+  defaultDailyLimit: number; // default global del entorno
+}
+
+export interface IUpdateNfcSettingsDto {
+  continuousDailyLimit?: number | null;
 }
 
 export interface INfcClaimDto {
@@ -1431,6 +1727,8 @@ export interface IBusinessProfile {
   updatedAt: Date;
   subscription: IBusinessSubscription;
   placeId?: string;
+  /** Pedirles review a los clientes (Trello #271). */
+  reviewsEnabled?: boolean;
   clientCount?: number;
 }
 
@@ -1498,6 +1796,8 @@ export interface IUpdateBusinessProfileDto {
   internalPhone?: string;
   externalPhone?: string;
   placeId?: string;
+  /** Switch de Configuración → Perfil (Trello #271). */
+  reviewsEnabled?: boolean;
   size?: BusinessSize;
   street?: string;
   neighborhood?: string;
@@ -1537,11 +1837,20 @@ export interface IBusinessQRData {
   businessName: string;
   qrCode: string; // Base64 del QR generado
   qrUrl: string; // URL que contiene el QR
+  /** Sucursal para la que se generó (sticker físico de ese local). null = QR general de la marca. */
+  branchId?: number | null;
+  branchName?: string | null;
 }
 
 // Nueva interfaz para solicitud de asociación con negocio
 export interface IJoinBusinessDto {
   businessId: number;
+  /**
+   * Sucursal impresa en el QR que el cliente escaneó (CP de Fase 3). La
+   * decide el negocio al generar el QR, no la elige el cliente en pantalla —
+   * mismo espíritu que RN-13, análogo al token estático del tag NFC.
+   */
+  branchId?: number;
 }
 
 // Nueva interfaz para respuesta de asociación con negocio
@@ -2360,7 +2669,13 @@ export interface IStampGrantingRules {
   multiplierRules: IStampMultiplierRule[];
 }
 
-export type IUpsertStampGrantingRulesDto = IStampGrantingRules;
+/**
+ * `scope: 'brand'` guarda las reglas de la marca aunque haya una sucursal
+ * activa; en la vista "Todas las sucursales" es la única opción (Trello #295).
+ */
+export type IUpsertStampGrantingRulesDto = IStampGrantingRules & {
+  scope?: "brand" | "branch";
+};
 
 export interface IFudoProductOption {
   id: string;
@@ -2504,3 +2819,274 @@ export interface IAppointmentStats {
   weekTotal: number;
   upcomingTotal: number;
 }
+
+// ============================================================================
+// EMAILS AUTOMÁTICOS — panel de administración
+// Catálogo de templates, historial de envíos, automatizaciones y envíos
+// manuales. El texto de cada template se puede editar desde el admin; el
+// diseño (HTML, colores, botón) lo sigue armando el backend.
+// ============================================================================
+
+export enum EmailTemplateKey {
+  BUSINESS_ABANDONED_CART = 'business_abandoned_cart',
+  BUSINESS_WELCOME = 'business_welcome',
+  BUSINESS_FOLLOW_UP_7D = 'business_follow_up_7d',
+  BUSINESS_CANCELLATION = 'business_cancellation',
+  BUSINESS_WIN_BACK_30D = 'business_win_back_30d',
+  BUSINESS_TRIAL_ENDING = 'business_trial_ending',
+  BUSINESS_PRICE_INCREASE = 'business_price_increase',
+  BUSINESS_TRANSFER_DUE_SOON = 'business_transfer_due_soon',
+  BUSINESS_TRANSFER_DUE_TODAY = 'business_transfer_due_today',
+  CLIENT_CARD_READY = 'client_card_ready',
+  CLIENT_ASSOCIATION_WELCOME = 'client_association_welcome',
+  CLIENT_GENERIC_WELCOME = 'client_generic_welcome',
+  BUSINESS_NEGATIVE_REVIEW = 'business_negative_review',
+}
+
+export enum EmailAudience {
+  BUSINESS = 'business',
+  CLIENT = 'client',
+}
+
+/** Cómo se dispara el email en producción. */
+export enum EmailTriggerKind {
+  /** Lo manda un cron diario/horario. */
+  SCHEDULED = 'scheduled',
+  /** Lo dispara un evento del sistema (alta, cancelación, etc.). */
+  EVENT = 'event',
+}
+
+export enum EmailSendStatus {
+  SENT = 'sent',
+  FAILED = 'failed',
+  /** No se envió: automatización apagada, dry-run o destinatario ya notificado. */
+  SKIPPED = 'skipped',
+}
+
+export enum EmailSendTrigger {
+  CRON = 'cron',
+  EVENT = 'event',
+  /** Reenvío puntual desde el admin. */
+  MANUAL = 'manual',
+  /** Envío en tanda desde el admin. */
+  BULK = 'bulk',
+  /** Prueba a la casilla del admin. */
+  TEST = 'test',
+}
+
+export interface IEmailTemplateVariable {
+  name: string;
+  description: string;
+  example: string;
+}
+
+/** Bloque especial que el cuerpo puede incluir como línea propia. */
+export interface IEmailTemplateBlock {
+  token: string;
+  description: string;
+}
+
+export interface IEmailTemplateSummary {
+  key: EmailTemplateKey;
+  name: string;
+  description: string;
+  audience: EmailAudience;
+  triggerKind: EmailTriggerKind;
+  /** Texto legible: "Todos los días a las 10:00 (ART)". */
+  triggerDescription: string;
+  subject: string;
+  enabled: boolean;
+  /** true si el texto fue editado desde el admin (hay override en la DB). */
+  customized: boolean;
+  updatedAt: string | null;
+  sentLast30Days: number;
+  lastSentAt: string | null;
+  /** Puede dispararse a mano / en tanda desde el admin. */
+  supportsManualSend: boolean;
+}
+
+export interface IEmailTemplateDetail extends IEmailTemplateSummary {
+  /** Título del encabezado violeta del mail. */
+  title: string;
+  body: string;
+  defaultTitle: string;
+  defaultSubject: string;
+  defaultBody: string;
+  variables: IEmailTemplateVariable[];
+  blocks: IEmailTemplateBlock[];
+  /** Puede reenviarse/mandarse a mano desde el admin. */
+  supportsManualSend: boolean;
+}
+
+export interface IUpdateEmailTemplateDto {
+  title?: string;
+  subject?: string;
+  body?: string;
+}
+
+export interface IToggleEmailTemplateDto {
+  enabled: boolean;
+}
+
+export interface IEmailTemplatePreviewDto {
+  title?: string;
+  subject?: string;
+  body?: string;
+}
+
+export interface IEmailTemplatePreview {
+  subject: string;
+  html: string;
+  /** Variables usadas en el texto que no existen para este template. */
+  unknownVariables: string[];
+}
+
+export interface IEmailTestSendDto extends IEmailTemplatePreviewDto {
+  email: string;
+}
+
+export interface IEmailLogEntry {
+  id: number;
+  templateKey: EmailTemplateKey;
+  templateName: string;
+  recipientEmail: string;
+  recipientName: string | null;
+  businessId: number | null;
+  businessName: string | null;
+  clientId: number | null;
+  subject: string;
+  status: EmailSendStatus;
+  trigger: EmailSendTrigger;
+  errorMessage: string | null;
+  providerMessageId: string | null;
+  sentAt: string;
+}
+
+export interface IEmailLogFilters {
+  page?: number;
+  limit?: number;
+  templateKey?: EmailTemplateKey;
+  status?: EmailSendStatus;
+  trigger?: EmailSendTrigger;
+  search?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface IEmailLogStats {
+  total: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  last7Days: number;
+}
+
+/** Próximo envío programado de una automatización. */
+export interface IScheduledEmailRun {
+  templateKey: EmailTemplateKey;
+  templateName: string;
+  enabled: boolean;
+  cronDescription: string;
+  nextRunAt: string;
+  /** "en 2 días", "mañana", "hoy a las 10:00". */
+  nextRunLabel: string;
+  /** Cuántos destinatarios recibirían el mail si el cron corriera ahora. */
+  pendingRecipients: number;
+  sampleRecipients: string[];
+  note: string | null;
+}
+
+/** Candidato a recibir un envío manual/en tanda. */
+export interface IEmailRecipientCandidate {
+  businessId: number | null;
+  clientId: number | null;
+  name: string;
+  email: string;
+  /** true si ya recibió este template (el envío manual puede forzarlo igual). */
+  alreadySent: boolean;
+  lastSentAt: string | null;
+}
+
+export enum EmailBulkAudience {
+  /** Los destinatarios elegidos a mano. */
+  SELECTED = 'selected',
+  /** Todos los negocios con suscripción activa. */
+  ACTIVE_BUSINESSES = 'active_businesses',
+  /** Todos los negocios activos que todavía no recibieron este template. */
+  PENDING_BUSINESSES = 'pending_businesses',
+}
+
+export interface IEmailManualSendDto {
+  audience: EmailBulkAudience;
+  businessIds?: number[];
+  clientIds?: number[];
+  /** Reenviar aunque el destinatario ya lo haya recibido. */
+  force?: boolean;
+  /** true = no envía, solo devuelve a quiénes le mandaría. */
+  dryRun?: boolean;
+}
+
+export interface IEmailManualSendResultItem {
+  email: string;
+  name: string;
+  businessId: number | null;
+  clientId: number | null;
+  status: EmailSendStatus;
+  reason: string | null;
+}
+
+export interface IEmailManualSendResult {
+  dryRun: boolean;
+  requested: number;
+  sent: number;
+  skipped: number;
+  failed: number;
+  items: IEmailManualSendResultItem[];
+}
+
+// ─── Reviews (Trello #271) ──────────────────────────────────────────────────
+//
+// Después de sumar sellos el cliente califica al negocio de 1 a 5 estrellas.
+// De 1 a 3 escribe qué pasó (hasta 500 caracteres) y queda solo en Stampia;
+// de 4 a 5 se lo manda a dejar la reseña en Google Maps, a la ficha de la
+// sucursal donde recibió el sello. Toda review es anónima para el negocio.
+
+export const REVIEW_MIN_RATING = 1;
+export const REVIEW_MAX_RATING = 5;
+/** Desde esta nota se lo manda a Google Maps; debajo, se queda en Stampia. */
+export const REVIEW_GOOGLE_MIN_RATING = 4;
+export const REVIEW_COMMENT_MAX_LENGTH = 500;
+
+/** Lo que manda el cliente al calificar. */
+export interface ICreateReviewDto {
+  rating: number;
+  /** Solo de 1 a 3 estrellas. */
+  comment?: string;
+  /** Sello que disparó el pedido: define la sucursal de la review. */
+  stampId?: number;
+}
+
+export interface ICreateReviewResponse {
+  /** Link a la ficha de Google Maps (4-5 estrellas con lugar cargado). */
+  googleReviewUrl: string | null;
+}
+
+/** Review tal como la ve el negocio: anónima, sin datos del cliente. */
+export interface IBusinessReview {
+  id: number;
+  rating: number;
+  comment: string | null;
+  branchId: number | null;
+  branchName: string | null;
+  /** 4-5 estrellas: se lo mandó a dejar la reseña en Google Maps. */
+  sentToGoogle: boolean;
+  createdAt: Date;
+}
+
+export interface IBusinessReviewsSummary {
+  total: number;
+  /** Promedio de 1 a 5 con un decimal; null sin reviews. */
+  averageRating: number | null;
+  sentToGoogle: number;
+}
+
