@@ -454,6 +454,8 @@ export interface IClient {
   firstName: string;
   lastName: string;
   birthDate: Date | null;
+  /** Celular de contacto. null = todavía no lo cargó (#287). */
+  phone?: string | null;
   googleId?: string;
   profilePicture?: string;
   provider: UserProvider;
@@ -830,6 +832,8 @@ export interface IBusinessClient {
   createdAt: Date;
   /** true si el cliente tiene la tarjeta agregada en Apple/Google Wallet */
   walletInstalled: boolean;
+  phone?: string | null;
+  birthDate?: Date | string | null;
 }
 export interface IStampRedemption {
   id?: number | string;
@@ -1296,6 +1300,7 @@ export interface ICreateClientDto {
   password: string;
   firstName: string;
   lastName: string;
+  phone?: string;
 }
 
 export interface IUpdateClientDto {
@@ -1738,6 +1743,7 @@ export interface IClientProfile {
   firstName: string;
   lastName: string;
   birthDate: Date | null;
+  phone?: string | null;
   profilePicture?: string;
   profilePictureUrl?: string;
   provider: UserProvider;
@@ -1818,6 +1824,7 @@ export interface IUpdateClientProfileDto {
   firstName?: string;
   lastName?: string;
   birthDate?: Date | string | null;
+  phone?: string | null;
 }
 
 export interface IChangePasswordDto {
