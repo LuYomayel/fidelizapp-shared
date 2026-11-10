@@ -1347,6 +1347,9 @@ export interface IRegisterCompleteRewardDto {
   stock?: number;
   expirationDate?: string;
   oneTimeUse: boolean;
+  /** Clásica (default) o escalonada con sus premios (#333). */
+  mode?: RewardMode;
+  milestones?: IRewardMilestoneInput[];
 }
 
 /**
