@@ -151,6 +151,28 @@ export interface IRegistrationRewardSuggestionsRequest {
   placeId?: string;
 }
 
+/**
+ * Lo que el alta rápida con IA completa con Google Maps al elegir el local
+ * (POST /business/registration/place-info).
+ */
+export interface IRegistrationPlaceInfo {
+  /** El tipo de negocio de Stampia que corresponde; OTRO si Google dice otra cosa. */
+  type: BusinessType;
+  /** Con OTRO, cómo lo llama Google ("Panadería"). */
+  customType: string | null;
+  /** Cómo lo llama Google, para mostrar ("Cafetería"). */
+  typeLabel: string | null;
+  website: string | null;
+  /** Si la web que tiene en Google es su Instagram: el usuario, con @. */
+  instagram: string | null;
+  /** Uno por día, como los da Google ("lunes: 8:00–20:00"). */
+  openingHours: string[];
+  /** "$", "$$", "$$$" o "$$$$". */
+  priceLabel: string | null;
+  rating: number | null;
+  reviewCount: number | null;
+}
+
 export interface IRegistrationRewardSuggestions {
   /** "ai" = las armó la IA; "none" = no hay (sin clave, sin saldo, error): el front usa las ideas por rubro. */
   source: "ai" | "none";
@@ -646,6 +668,8 @@ export interface IBusiness {
   instagram?: string;
   tiktok?: string;
   website?: string;
+  /** Horarios de Google Maps, uno por día ("lunes: 8:00–20:00"). Los carga el alta rápida con IA. */
+  openingHours?: string[] | null;
   emailVerified?: boolean; // Si el email ha sido verificado
   emailVerificationCode?: string; // Código de verificación de email
   emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
@@ -1547,6 +1571,7 @@ export interface ICreateBusinessDto {
   instagram?: string;
   tiktok?: string;
   website?: string;
+  openingHours?: string[];
   logo?: File;
   logoPath?: string;
   emoji?: string;
