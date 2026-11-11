@@ -109,6 +109,172 @@ export enum RewardMode {
 export const TIERED_REWARD_MIN_MILESTONES = 2;
 export const TIERED_REWARD_MAX_MILESTONES = 3;
 
+// ===== Notificaciones del wallet a un grupo de clientes (Trello #330) =====
+
+/** Grupos de clientes a los que el negocio le puede mandar una notificación. */
+export enum WalletPromotionSegment {
+  ALL = "all",
+  CAN_REDEEM = "can_redeem",
+  NEAR_REWARD = "near_reward",
+  LAPSED_REGULARS = "lapsed_regulars",
+  ONE_VISIT = "one_visit",
+}
+
+/** Reglas de los grupos y del anti-spam. El back y el front leen las mismas. */
+export const WALLET_PROMOTION_RULES = {
+  /** Un cliente recibe como máximo una notificación del negocio cada N días. */
+  cooldownDays: 3,
+  /** "Cerca de un premio": le faltan entre 1 y N sellos. */
+  nearRewardMaxStamps: 2,
+  /** "Habituales": al menos N visitas (días distintos con sello). */
+  regularMinVisits: 3,
+  /** ...que no vienen hace más de N días. */
+  lapsedDays: 30,
+} as const;
+
+export const WALLET_PROMOTION_SEGMENT_LABELS: Record<
+  WalletPromotionSegment,
+  { label: string; hint: string }
+> = {
+  [WalletPromotionSegment.ALL]: {
+    label: "Todos",
+    hint: "Todos los clientes con la tarjeta en el celular",
+  },
+  [WalletPromotionSegment.CAN_REDEEM]: {
+    label: "Pueden canjear",
+    hint: "Ya tienen sellos para algún premio",
+  },
+  [WalletPromotionSegment.NEAR_REWARD]: {
+    label: "Cerca de un premio",
+    hint: `Les faltan 1 o ${WALLET_PROMOTION_RULES.nearRewardMaxStamps} sellos`,
+  },
+  [WalletPromotionSegment.LAPSED_REGULARS]: {
+    label: "Habituales que no vienen",
+    hint: `${WALLET_PROMOTION_RULES.regularMinVisits}+ visitas y no vienen hace más de ${WALLET_PROMOTION_RULES.lapsedDays} días`,
+  },
+  [WalletPromotionSegment.ONE_VISIT]: {
+    label: "Vinieron una vez",
+    hint: "Tienen una sola visita",
+  },
+};
+
+/**
+ * Variables de las notificaciones (#330, fase 2): se completan con los datos
+ * de CADA cliente al mandar ("Estás a 2 sellos de Café de regalo").
+ */
+export const WALLET_PROMOTION_VARIABLES = [
+  { key: "negocio", label: "Negocio", example: "Tu negocio" },
+  { key: "premio", label: "Premio", example: "Café de regalo" },
+  { key: "sellos_faltan", label: "Sellos que faltan", example: "2 sellos" },
+] as const;
+
+export type WalletPromotionVariableKey =
+  (typeof WALLET_PROMOTION_VARIABLES)[number]["key"];
+
+export type WalletPromotionVariableValues = Record<
+  WalletPromotionVariableKey,
+  string
+>;
+
+export const WALLET_PROMOTION_MESSAGE_MAX = 200;
+
+const WALLET_PROMOTION_VARIABLE_PATTERN = /\{\s*([a-zA-Z_áéíóúñ]+)\s*\}/g;
+
+/** Variables escritas que no existen (ej. "{nombre}"): el back las rechaza. */
+export function walletPromotionUnknownVariables(template: string): string[] {
+  const known = new Set<string>(WALLET_PROMOTION_VARIABLES.map((v) => v.key));
+  const unknown = new Set<string>();
+  for (const match of template.matchAll(WALLET_PROMOTION_VARIABLE_PATTERN)) {
+    if (!known.has(match[1])) unknown.add(match[1]);
+  }
+  return [...unknown];
+}
+
+/** Reemplaza las variables y corta en 200 caracteres (nombres de premio largos). */
+export function renderWalletPromotionMessage(
+  template: string,
+  values: WalletPromotionVariableValues,
+): string {
+  const text = template
+    .replace(WALLET_PROMOTION_VARIABLE_PATTERN, (whole, key: string) =>
+      key in values ? values[key as WalletPromotionVariableKey] : whole,
+    )
+    .trim();
+  return text.length > WALLET_PROMOTION_MESSAGE_MAX
+    ? `${text.slice(0, WALLET_PROMOTION_MESSAGE_MAX - 1).trimEnd()}…`
+    : text;
+}
+
+/** "1 sello" / "3 sellos". */
+export const walletPromotionStampsLabel = (stamps: number): string =>
+  `${stamps} ${stamps === 1 ? "sello" : "sellos"}`;
+
+/** Plantillas sugeridas por grupo (#330, fase 2). Se pueden editar antes de mandar. */
+export const WALLET_PROMOTION_TEMPLATES: Record<WalletPromotionSegment, string[]> = {
+  [WalletPromotionSegment.ALL]: [
+    "Te esperamos en {negocio} esta semana. Cada visita te suma un sello más.",
+    "Hay novedades en {negocio}. Pasá a conocerlas y sumá tu sello.",
+  ],
+  [WalletPromotionSegment.CAN_REDEEM]: [
+    "Ya podés canjear {premio} en {negocio}. Pasá cuando quieras y pedilo.",
+    "Tu {premio} te está esperando en {negocio}. No te lo olvides!",
+  ],
+  [WalletPromotionSegment.NEAR_REWARD]: [
+    "Estás a {sellos_faltan} de {premio}. Te esperamos en {negocio}!",
+    "Te falta poco: {sellos_faltan} y te llevás {premio}. Pasá esta semana.",
+  ],
+  [WalletPromotionSegment.LAPSED_REGULARS]: [
+    "Hace rato que no te vemos por {negocio}. Te esperamos con tu tarjeta lista!",
+    "Te extrañamos en {negocio}. Volvé y seguí sumando para {premio}.",
+  ],
+  [WalletPromotionSegment.ONE_VISIT]: [
+    "Gracias por venir a {negocio}! Con tu próxima visita sumás otro sello.",
+    "Volvé a {negocio} y seguí sumando: estás a {sellos_faltan} de {premio}.",
+  ],
+};
+
+export interface IWalletPromotionSegmentCount {
+  segment: WalletPromotionSegment;
+  /** Clientes del grupo con la tarjeta en el celular. */
+  clients: number;
+  /** De esos, cuántos se saltean por haber recibido una hace poco. */
+  skippedRecent: number;
+  /** Valores de ejemplo para la vista previa (de un cliente del grupo; sin datos personales). */
+  example?: WalletPromotionVariableValues;
+}
+
+/** Redactor con IA (#330, fase 3). */
+export interface IWalletPromotionAiStatus {
+  /** Hay API key cargada en el servidor. */
+  enabled: boolean;
+  limit: number;
+  remaining: number;
+}
+
+export interface IWalletPromotionPreview {
+  segments: IWalletPromotionSegmentCount[];
+  cooldownDays: number;
+  ai: IWalletPromotionAiStatus;
+}
+
+export interface IWalletPromotionSuggestions {
+  suggestions: string[];
+  remaining: number;
+}
+
+export interface IWalletPromotionResult {
+  promotionId: number;
+  segment: WalletPromotionSegment;
+  /** Clientes a los que se les mandó. */
+  recipients: number;
+  /** Clientes del grupo salteados por el anti-spam. */
+  skippedRecent: number;
+  google: number;
+  googleQuotaExceeded: number;
+  googleFailed: number;
+  apple: number;
+}
+
 // ======= ENUMS/DTOS PARA ANUNCIOS =======
 export enum AnnouncementType {
   NEWS = "NEWS",
