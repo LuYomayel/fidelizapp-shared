@@ -109,6 +109,81 @@ export enum RewardMode {
 export const TIERED_REWARD_MIN_MILESTONES = 2;
 export const TIERED_REWARD_MAX_MILESTONES = 3;
 
+// ===== Notificaciones del wallet a un grupo de clientes (Trello #330) =====
+
+/** Grupos de clientes a los que el negocio le puede mandar una notificación. */
+export enum WalletPromotionSegment {
+  ALL = "all",
+  CAN_REDEEM = "can_redeem",
+  NEAR_REWARD = "near_reward",
+  LAPSED_REGULARS = "lapsed_regulars",
+  ONE_VISIT = "one_visit",
+}
+
+/** Reglas de los grupos y del anti-spam. El back y el front leen las mismas. */
+export const WALLET_PROMOTION_RULES = {
+  /** Un cliente recibe como máximo una notificación del negocio cada N días. */
+  cooldownDays: 3,
+  /** "Cerca de un premio": le faltan entre 1 y N sellos. */
+  nearRewardMaxStamps: 2,
+  /** "Habituales": al menos N visitas (días distintos con sello). */
+  regularMinVisits: 3,
+  /** ...que no vienen hace más de N días. */
+  lapsedDays: 30,
+} as const;
+
+export const WALLET_PROMOTION_SEGMENT_LABELS: Record<
+  WalletPromotionSegment,
+  { label: string; hint: string }
+> = {
+  [WalletPromotionSegment.ALL]: {
+    label: "Todos",
+    hint: "Todos los clientes con la tarjeta en el celular",
+  },
+  [WalletPromotionSegment.CAN_REDEEM]: {
+    label: "Pueden canjear",
+    hint: "Ya tienen sellos para algún premio",
+  },
+  [WalletPromotionSegment.NEAR_REWARD]: {
+    label: "Cerca de un premio",
+    hint: `Les faltan 1 o ${WALLET_PROMOTION_RULES.nearRewardMaxStamps} sellos`,
+  },
+  [WalletPromotionSegment.LAPSED_REGULARS]: {
+    label: "Habituales que no vienen",
+    hint: `${WALLET_PROMOTION_RULES.regularMinVisits}+ visitas y no vienen hace más de ${WALLET_PROMOTION_RULES.lapsedDays} días`,
+  },
+  [WalletPromotionSegment.ONE_VISIT]: {
+    label: "Vinieron una vez",
+    hint: "Tienen una sola visita",
+  },
+};
+
+export interface IWalletPromotionSegmentCount {
+  segment: WalletPromotionSegment;
+  /** Clientes del grupo con la tarjeta en el celular. */
+  clients: number;
+  /** De esos, cuántos se saltean por haber recibido una hace poco. */
+  skippedRecent: number;
+}
+
+export interface IWalletPromotionPreview {
+  segments: IWalletPromotionSegmentCount[];
+  cooldownDays: number;
+}
+
+export interface IWalletPromotionResult {
+  promotionId: number;
+  segment: WalletPromotionSegment;
+  /** Clientes a los que se les mandó. */
+  recipients: number;
+  /** Clientes del grupo salteados por el anti-spam. */
+  skippedRecent: number;
+  google: number;
+  googleQuotaExceeded: number;
+  googleFailed: number;
+  apple: number;
+}
+
 // ======= ENUMS/DTOS PARA ANUNCIOS =======
 export enum AnnouncementType {
   NEWS = "NEWS",
