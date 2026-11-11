@@ -109,6 +109,56 @@ export enum RewardMode {
 export const TIERED_REWARD_MIN_MILESTONES = 2;
 export const TIERED_REWARD_MAX_MILESTONES = 3;
 
+// ===== Recompensas recomendadas en el alta (Google + IA) =====
+
+/** Límites de una recompensa, los mismos que el formulario. */
+export const REWARD_SUGGESTION_LIMITS = {
+  nameMax: 30,
+  descriptionMax: 200,
+  milestoneDescriptionMax: 60,
+  minStamps: 1,
+  maxStamps: 20,
+  reasonMax: 140,
+} as const;
+
+/** Un premio de una recompensa recomendada del tipo Camino de premios. */
+export interface IRewardSuggestionPrize {
+  stamps: number;
+  type: RewardType;
+  description: string;
+}
+
+/**
+ * Recompensa recomendada para el negocio. En la clásica valen name,
+ * description, stampsCost y type; en el Camino de premios, milestones.
+ */
+export interface IRewardSuggestion {
+  mode: RewardMode;
+  name: string;
+  description: string;
+  stampsCost: number;
+  type: RewardType;
+  milestones: IRewardSuggestionPrize[];
+  /** Por qué se la recomienda, en una oración ("En Google destacan sus medialunas"). */
+  reason: string;
+}
+
+/** Lo que manda el alta para pedir recomendaciones (todavía no hay negocio). */
+export interface IRegistrationRewardSuggestionsRequest {
+  businessName: string;
+  type?: string;
+  customType?: string;
+  placeId?: string;
+}
+
+export interface IRegistrationRewardSuggestions {
+  /** "ai" = las armó la IA; "none" = no hay (sin clave, sin saldo, error): el front usa las ideas por rubro. */
+  source: "ai" | "none";
+  /** Si se usaron los datos del negocio en Google Maps. */
+  usedGoogle: boolean;
+  suggestions: IRewardSuggestion[];
+}
+
 // ===== Notificaciones del wallet a un grupo de clientes (Trello #330) =====
 
 /** Grupos de clientes a los que el negocio le puede mandar una notificación. */
