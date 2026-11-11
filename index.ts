@@ -171,6 +171,8 @@ export interface IRegistrationPlaceInfo {
   priceLabel: string | null;
   rating: number | null;
   reviewCount: number | null;
+  /** Teléfono del local en Google ("011 4664-1234"). */
+  phone: string | null;
 }
 
 export interface IRegistrationRewardSuggestions {
