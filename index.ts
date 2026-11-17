@@ -108,6 +108,8 @@ export enum RewardMode {
 /** Mínimo y máximo de hitos de una recompensa escalonada (#333). */
 export const TIERED_REWARD_MIN_MILESTONES = 2;
 export const TIERED_REWARD_MAX_MILESTONES = 3;
+/** Largo máximo de la descripción (condiciones) de cada premio del camino. */
+export const TIERED_MILESTONE_DETAILS_MAX = 200;
 
 // ===== Recompensas recomendadas en el alta (Google + IA) =====
 
@@ -1085,6 +1087,8 @@ export interface ITieredMilestoneProgress {
   type: RewardType;
   typeDescription: string | null;
   description: string;
+  /** Descripción del premio: sus condiciones ("Válido de lunes a viernes"). */
+  details?: string | null;
   /** El último hito: canjearlo descuenta sus sellos y cierra la vuelta. */
   isLast: boolean;
   /** Ya lo canjeó en la vuelta actual (pendiente, entregado o vencido). */
@@ -1141,7 +1145,10 @@ export interface IRewardMilestone {
   stamps: number; // en qué sello está el premio
   type: RewardType;
   typeDescription: string | null;
+  /** Nombre del premio ("Café de regalo"). */
   description: string;
+  /** Descripción del premio: sus condiciones. Opcional. */
+  details?: string | null;
 }
 
 /** Hito al crear o editar una escalonada; con `id` = editar uno existente. */
@@ -1151,6 +1158,8 @@ export interface IRewardMilestoneInput {
   type: RewardType;
   typeDescription?: string | null;
   description: string;
+  /** Descripción del premio: sus condiciones. Opcional. */
+  details?: string | null;
 }
 
 export interface IReward {
