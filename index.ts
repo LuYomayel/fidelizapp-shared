@@ -94,6 +94,263 @@ export enum RewardType {
   OTHER = "otro",
 }
 
+/**
+ * Tipo de recompensa (Trello #333). CLASSIC = la de siempre: cada una descuenta
+ * sus sellos al canjearse y un negocio puede tener varias. TIERED = escalonada:
+ * una sola recompensa con 2 o 3 hitos; los intermedios no descuentan sellos y el
+ * último descuenta y cierra la vuelta. Un negocio tiene activo un solo tipo.
+ */
+export enum RewardMode {
+  CLASSIC = "classic",
+  TIERED = "tiered",
+}
+
+/** Mínimo y máximo de hitos de una recompensa escalonada (#333). */
+export const TIERED_REWARD_MIN_MILESTONES = 2;
+export const TIERED_REWARD_MAX_MILESTONES = 3;
+/** Largo máximo de la descripción (condiciones) de cada premio del camino. */
+export const TIERED_MILESTONE_DETAILS_MAX = 200;
+
+// ===== Recompensas recomendadas en el alta (Google + IA) =====
+
+/** Límites de una recompensa, los mismos que el formulario. */
+export const REWARD_SUGGESTION_LIMITS = {
+  nameMax: 30,
+  descriptionMax: 200,
+  milestoneDescriptionMax: 60,
+  minStamps: 1,
+  maxStamps: 20,
+  reasonMax: 140,
+} as const;
+
+/** Un premio de una recompensa recomendada del tipo Camino de premios. */
+export interface IRewardSuggestionPrize {
+  stamps: number;
+  type: RewardType;
+  description: string;
+}
+
+/**
+ * Recompensa recomendada para el negocio. En la clásica valen name,
+ * description, stampsCost y type; en el Camino de premios, milestones.
+ */
+export interface IRewardSuggestion {
+  mode: RewardMode;
+  name: string;
+  description: string;
+  stampsCost: number;
+  type: RewardType;
+  milestones: IRewardSuggestionPrize[];
+  /** Por qué se la recomienda, en una oración ("En Google destacan sus medialunas"). */
+  reason: string;
+}
+
+/** Lo que manda el alta para pedir recomendaciones (todavía no hay negocio). */
+export interface IRegistrationRewardSuggestionsRequest {
+  businessName: string;
+  type?: string;
+  customType?: string;
+  placeId?: string;
+}
+
+/**
+ * Lo que el alta rápida con IA completa con Google Maps al elegir el local
+ * (POST /business/registration/place-info).
+ */
+export interface IRegistrationPlaceInfo {
+  /** El tipo de negocio de Stampia que corresponde; OTRO si Google dice otra cosa. */
+  type: BusinessType;
+  /** Con OTRO, cómo lo llama Google ("Panadería"). */
+  customType: string | null;
+  /** Cómo lo llama Google, para mostrar ("Cafetería"). */
+  typeLabel: string | null;
+  website: string | null;
+  /** Si la web que tiene en Google es su Instagram: el usuario, con @. */
+  instagram: string | null;
+  /** Uno por día, como los da Google ("lunes: 8:00–20:00"). */
+  openingHours: string[];
+  /** "$", "$$", "$$$" o "$$$$". */
+  priceLabel: string | null;
+  rating: number | null;
+  reviewCount: number | null;
+  /** Teléfono del local en Google ("011 4664-1234"). */
+  phone: string | null;
+}
+
+export interface IRegistrationRewardSuggestions {
+  /** "ai" = las armó la IA; "none" = no hay (sin clave, sin saldo, error): el front usa las ideas por rubro. */
+  source: "ai" | "none";
+  /** Si se usaron los datos del negocio en Google Maps. */
+  usedGoogle: boolean;
+  suggestions: IRewardSuggestion[];
+}
+
+// ===== Notificaciones del wallet a un grupo de clientes (Trello #330) =====
+
+/** Grupos de clientes a los que el negocio le puede mandar una notificación. */
+export enum WalletPromotionSegment {
+  ALL = "all",
+  CAN_REDEEM = "can_redeem",
+  NEAR_REWARD = "near_reward",
+  LAPSED_REGULARS = "lapsed_regulars",
+  ONE_VISIT = "one_visit",
+}
+
+/** Reglas de los grupos y del anti-spam. El back y el front leen las mismas. */
+export const WALLET_PROMOTION_RULES = {
+  /** Un cliente recibe como máximo una notificación del negocio cada N días. */
+  cooldownDays: 3,
+  /** "Cerca de un premio": le faltan entre 1 y N sellos. */
+  nearRewardMaxStamps: 2,
+  /** "Habituales": al menos N visitas (días distintos con sello). */
+  regularMinVisits: 3,
+  /** ...que no vienen hace más de N días. */
+  lapsedDays: 30,
+} as const;
+
+export const WALLET_PROMOTION_SEGMENT_LABELS: Record<
+  WalletPromotionSegment,
+  { label: string; hint: string }
+> = {
+  [WalletPromotionSegment.ALL]: {
+    label: "Todos",
+    hint: "Todos los clientes con la tarjeta en el celular",
+  },
+  [WalletPromotionSegment.CAN_REDEEM]: {
+    label: "Pueden canjear",
+    hint: "Ya tienen sellos para algún premio",
+  },
+  [WalletPromotionSegment.NEAR_REWARD]: {
+    label: "Cerca de un premio",
+    hint: `Les faltan 1 o ${WALLET_PROMOTION_RULES.nearRewardMaxStamps} sellos`,
+  },
+  [WalletPromotionSegment.LAPSED_REGULARS]: {
+    label: "Habituales que no vienen",
+    hint: `${WALLET_PROMOTION_RULES.regularMinVisits}+ visitas y no vienen hace más de ${WALLET_PROMOTION_RULES.lapsedDays} días`,
+  },
+  [WalletPromotionSegment.ONE_VISIT]: {
+    label: "Vinieron una vez",
+    hint: "Tienen una sola visita",
+  },
+};
+
+/**
+ * Variables de las notificaciones (#330, fase 2): se completan con los datos
+ * de CADA cliente al mandar ("Estás a 2 sellos de Café de regalo").
+ */
+export const WALLET_PROMOTION_VARIABLES = [
+  { key: "negocio", label: "Negocio", example: "Tu negocio" },
+  { key: "premio", label: "Premio", example: "Café de regalo" },
+  { key: "sellos_faltan", label: "Sellos que faltan", example: "2 sellos" },
+] as const;
+
+export type WalletPromotionVariableKey =
+  (typeof WALLET_PROMOTION_VARIABLES)[number]["key"];
+
+export type WalletPromotionVariableValues = Record<
+  WalletPromotionVariableKey,
+  string
+>;
+
+export const WALLET_PROMOTION_MESSAGE_MAX = 200;
+
+const WALLET_PROMOTION_VARIABLE_PATTERN = /\{\s*([a-zA-Z_áéíóúñ]+)\s*\}/g;
+
+/** Variables escritas que no existen (ej. "{nombre}"): el back las rechaza. */
+export function walletPromotionUnknownVariables(template: string): string[] {
+  const known = new Set<string>(WALLET_PROMOTION_VARIABLES.map((v) => v.key));
+  const unknown = new Set<string>();
+  for (const match of template.matchAll(WALLET_PROMOTION_VARIABLE_PATTERN)) {
+    if (!known.has(match[1])) unknown.add(match[1]);
+  }
+  return [...unknown];
+}
+
+/** Reemplaza las variables y corta en 200 caracteres (nombres de premio largos). */
+export function renderWalletPromotionMessage(
+  template: string,
+  values: WalletPromotionVariableValues,
+): string {
+  const text = template
+    .replace(WALLET_PROMOTION_VARIABLE_PATTERN, (whole, key: string) =>
+      key in values ? values[key as WalletPromotionVariableKey] : whole,
+    )
+    .trim();
+  return text.length > WALLET_PROMOTION_MESSAGE_MAX
+    ? `${text.slice(0, WALLET_PROMOTION_MESSAGE_MAX - 1).trimEnd()}…`
+    : text;
+}
+
+/** "1 sello" / "3 sellos". */
+export const walletPromotionStampsLabel = (stamps: number): string =>
+  `${stamps} ${stamps === 1 ? "sello" : "sellos"}`;
+
+/** Plantillas sugeridas por grupo (#330, fase 2). Se pueden editar antes de mandar. */
+export const WALLET_PROMOTION_TEMPLATES: Record<WalletPromotionSegment, string[]> = {
+  [WalletPromotionSegment.ALL]: [
+    "Te esperamos en {negocio} esta semana. Cada visita te suma un sello más.",
+    "Hay novedades en {negocio}. Pasá a conocerlas y sumá tu sello.",
+  ],
+  [WalletPromotionSegment.CAN_REDEEM]: [
+    "Ya podés canjear {premio} en {negocio}. Pasá cuando quieras y pedilo.",
+    "Tu {premio} te está esperando en {negocio}. No te lo olvides!",
+  ],
+  [WalletPromotionSegment.NEAR_REWARD]: [
+    "Estás a {sellos_faltan} de {premio}. Te esperamos en {negocio}!",
+    "Te falta poco: {sellos_faltan} y te llevás {premio}. Pasá esta semana.",
+  ],
+  [WalletPromotionSegment.LAPSED_REGULARS]: [
+    "Hace rato que no te vemos por {negocio}. Te esperamos con tu tarjeta lista!",
+    "Te extrañamos en {negocio}. Volvé y seguí sumando para {premio}.",
+  ],
+  [WalletPromotionSegment.ONE_VISIT]: [
+    "Gracias por venir a {negocio}! Con tu próxima visita sumás otro sello.",
+    "Volvé a {negocio} y seguí sumando: estás a {sellos_faltan} de {premio}.",
+  ],
+};
+
+export interface IWalletPromotionSegmentCount {
+  segment: WalletPromotionSegment;
+  /** Clientes del grupo con la tarjeta en el celular. */
+  clients: number;
+  /** De esos, cuántos se saltean por haber recibido una hace poco. */
+  skippedRecent: number;
+  /** Valores de ejemplo para la vista previa (de un cliente del grupo; sin datos personales). */
+  example?: WalletPromotionVariableValues;
+}
+
+/** Redactor con IA (#330, fase 3). */
+export interface IWalletPromotionAiStatus {
+  /** Hay API key cargada en el servidor. */
+  enabled: boolean;
+  limit: number;
+  remaining: number;
+}
+
+export interface IWalletPromotionPreview {
+  segments: IWalletPromotionSegmentCount[];
+  cooldownDays: number;
+  ai: IWalletPromotionAiStatus;
+}
+
+export interface IWalletPromotionSuggestions {
+  suggestions: string[];
+  remaining: number;
+}
+
+export interface IWalletPromotionResult {
+  promotionId: number;
+  segment: WalletPromotionSegment;
+  /** Clientes a los que se les mandó. */
+  recipients: number;
+  /** Clientes del grupo salteados por el anti-spam. */
+  skippedRecent: number;
+  google: number;
+  googleQuotaExceeded: number;
+  googleFailed: number;
+  apple: number;
+}
+
 // ======= ENUMS/DTOS PARA ANUNCIOS =======
 export enum AnnouncementType {
   NEWS = "NEWS",
@@ -415,6 +672,8 @@ export interface IBusiness {
   instagram?: string;
   tiktok?: string;
   website?: string;
+  /** Horarios de Google Maps, uno por día ("lunes: 8:00–20:00"). Los carga el alta rápida con IA. */
+  openingHours?: string[] | null;
   emailVerified?: boolean; // Si el email ha sido verificado
   emailVerificationCode?: string; // Código de verificación de email
   emailVerificationCodeExpiry?: Date; // Fecha de expiración del código
@@ -454,6 +713,8 @@ export interface IClient {
   firstName: string;
   lastName: string;
   birthDate: Date | null;
+  /** Celular de contacto. null = todavía no lo cargó (#287). */
+  phone?: string | null;
   googleId?: string;
   profilePicture?: string;
   provider: UserProvider;
@@ -799,6 +1060,8 @@ export interface IClientCard {
    * sello). null = no se sabe / marca entera (tarjetas de antes de Fase 3).
    */
   branchId?: number | null;
+  /** Vuelta de la recompensa escalonada (#333); arranca en 1. */
+  rewardRound?: number;
 }
 
 // Interfaz extendida para respuestas de API que incluyen información de recompensas
@@ -813,6 +1076,35 @@ export interface IClientCardWithReward extends IClientCard {
   availableRewards: IReward[];
   rewardStamps?: number[]; // TODOS los sellos que tienen recompensas (sin importar si se pueden canjear)
   redeemableStamps?: number[]; // Solo los sellos que YA se pueden canjear
+  /** Solo si el negocio tiene activa una recompensa escalonada (#333). */
+  tieredProgress?: ITieredRewardProgress | null;
+}
+
+/** Un hito de la escalonada visto desde la tarjeta de un cliente (#333). */
+export interface ITieredMilestoneProgress {
+  milestoneId: number;
+  stamps: number;
+  type: RewardType;
+  typeDescription: string | null;
+  description: string;
+  /** Descripción del premio: sus condiciones ("Válido de lunes a viernes"). */
+  details?: string | null;
+  /** El último hito: canjearlo descuenta sus sellos y cierra la vuelta. */
+  isLast: boolean;
+  /** Ya lo canjeó en la vuelta actual (pendiente, entregado o vencido). */
+  redeemed: boolean;
+  /** Lo puede canjear ahora: tiene los sellos y no lo canjeó en esta vuelta. */
+  redeemable: boolean;
+}
+
+export interface ITieredRewardProgress {
+  rewardId: number;
+  rewardName: string;
+  /** Número de vuelta actual de la tarjeta (arranca en 1). */
+  round: number;
+  /** Sello del último hito: la meta de la vuelta. */
+  target: number;
+  milestones: ITieredMilestoneProgress[];
 }
 
 export interface IBusinessClient {
@@ -830,6 +1122,8 @@ export interface IBusinessClient {
   createdAt: Date;
   /** true si el cliente tiene la tarjeta agregada en Apple/Google Wallet */
   walletInstalled: boolean;
+  phone?: string | null;
+  birthDate?: Date | string | null;
 }
 export interface IStampRedemption {
   id?: number | string;
@@ -843,6 +1137,30 @@ export interface IStampRedemption {
 }
 
 export type RewardScope = 'public' | 'birthday_only' | 'custom';
+
+/** Hito de una recompensa escalonada (#333). */
+export interface IRewardMilestone {
+  id: number;
+  rewardId: number;
+  stamps: number; // en qué sello está el premio
+  type: RewardType;
+  typeDescription: string | null;
+  /** Nombre del premio ("Café de regalo"). */
+  description: string;
+  /** Descripción del premio: sus condiciones. Opcional. */
+  details?: string | null;
+}
+
+/** Hito al crear o editar una escalonada; con `id` = editar uno existente. */
+export interface IRewardMilestoneInput {
+  id?: number;
+  stamps: number;
+  type: RewardType;
+  typeDescription?: string | null;
+  description: string;
+  /** Descripción del premio: sus condiciones. Opcional. */
+  details?: string | null;
+}
 
 export interface IReward {
   id: number;
@@ -862,6 +1180,10 @@ export interface IReward {
   branchId?: number | null;
   branchIds?: number[] | null; // vacío/null = de la marca (todos los locales); [X, Y] = solo en esas (RN-14, #295)
   branchName?: string | null; // "Belgrano" o "Belgrano y Palermo", para avisarle al cliente antes de canjear
+  /** Clásica o escalonada (#333). Ausente = clásica. */
+  mode?: RewardMode;
+  /** Hitos de la escalonada, del sello más bajo al más alto (#333). */
+  milestones?: IRewardMilestone[];
   createdAt: Date;
   updatedAt: Date;
   // Relaciones
@@ -885,6 +1207,12 @@ export interface IRewardRedemption {
   deliveredBy?: string; // Quién entregó la recompensa
   branchId?: number | null; // Sucursal donde se entregó (null mientras está pendiente) — RN-12
   notes?: string; // Notas adicionales del canje
+  /** Hito canjeado, si la recompensa es escalonada (#333). */
+  milestoneId?: number | null;
+  /** Vuelta de la tarjeta en la que se canjeó el hito (#333). */
+  round?: number | null;
+  /** Premio del hito al momento del canje (#333). */
+  milestoneDescription?: string | null;
   redeemedAt: Date;
   updatedAt: Date;
   wasNotified?: boolean;
@@ -904,6 +1232,10 @@ export interface IRedemptionTicket {
   rewardName: string;
   rewardDescription: string;
   stampsSpent: number;
+  /** Hito canjeado, si la recompensa es escalonada (#333). */
+  milestoneId?: number | null;
+  /** true si el canje cerró la vuelta de la escalonada (#333). */
+  closedRound?: boolean;
   redeemedAt: Date;
   expiresAt?: Date;
   status: RedemptionStatus;
@@ -1250,6 +1582,7 @@ export interface ICreateBusinessDto {
   instagram?: string;
   tiktok?: string;
   website?: string;
+  openingHours?: string[];
   logo?: File;
   logoPath?: string;
   emoji?: string;
@@ -1266,6 +1599,9 @@ export interface IRegisterCompleteRewardDto {
   stock?: number;
   expirationDate?: string;
   oneTimeUse: boolean;
+  /** Clásica (default) o escalonada con sus premios (#333). */
+  mode?: RewardMode;
+  milestones?: IRewardMilestoneInput[];
 }
 
 /**
@@ -1296,6 +1632,7 @@ export interface ICreateClientDto {
   password: string;
   firstName: string;
   lastName: string;
+  phone?: string;
 }
 
 export interface IUpdateClientDto {
@@ -1342,6 +1679,15 @@ export type ICreateRewardDto = {
   oneTimeUse: boolean;
   /** Sucursales donde se ofrece; vacío = de la marca (Trello #295). */
   branchIds?: number[];
+  /** Clásica (default) o escalonada (#333). */
+  mode?: RewardMode;
+  /** Hitos de la escalonada (2 o 3). En la escalonada, `stampsCost` = sello del último. */
+  milestones?: IRewardMilestoneInput[];
+  /**
+   * Exclusividad (#333): si ya hay activas del otro tipo (o otra escalonada),
+   * el back rechaza el alta/activación salvo que venga en true; con true las desactiva.
+   */
+  replaceActiveRewards?: boolean;
 };
 export type IUpdateRewardDto = Partial<
   ICreateRewardDto & { active: boolean; isBirthdayOnly?: boolean }
@@ -1417,6 +1763,8 @@ export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   error?: string;
+  /** Código estable de error de negocio, p. ej. 'REWARD_MODE_CONFLICT' (#333). */
+  code?: string;
 }
 
 export type SortOrder = 'ASC' | 'DESC';
@@ -1738,6 +2086,7 @@ export interface IClientProfile {
   firstName: string;
   lastName: string;
   birthDate: Date | null;
+  phone?: string | null;
   profilePicture?: string;
   profilePictureUrl?: string;
   provider: UserProvider;
@@ -1818,6 +2167,7 @@ export interface IUpdateClientProfileDto {
   firstName?: string;
   lastName?: string;
   birthDate?: Date | string | null;
+  phone?: string | null;
 }
 
 export interface IChangePasswordDto {
